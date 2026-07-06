@@ -1,0 +1,21 @@
+<html>
+  <script>
+    function isPrime(j) {
+      if (j < 2) return false;
+      for (let i = 2; i < j; i++) {
+        if (j % i === 0) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    let number = +prompt("Enter your number:");
+
+    for (let j = 2; j <= number; j++) {
+      if (isPrime(j)) {
+        console.log(j + " is prime.");
+      }
+    }
+  </script>
+</html>
