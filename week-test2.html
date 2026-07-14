@@ -1,0 +1,29 @@
+<!doctype html>
+<script>
+  "use strict";
+
+  let todos = [
+    { text: "buy milk", done: true },
+    { text: "Build a project", done: true },
+    { text: "Deploy to production", done: false },
+  ];
+
+  todos.push({ text: "Learn JavaScript fully", done: false });
+
+  todos.forEach((item) => console.log(item.text)); //  just trying this arrow format as well
+
+  //   todos.forEach(function (todo) {
+  //     if (todo.done) {
+  //       console.log(todo.text);
+  //     }
+  //   }); //another way to filter out what is done and what is not done
+
+  let completed = todos.filter(function (todo) {
+    return todo.done;
+  });
+
+  completed.forEach(function (completedTodo) {
+    console.log("this is completed:", completedTodo.text);
+  });
+  console.log("total =" + todos.length + " and " + "done:" + completed.length);
+</script>
