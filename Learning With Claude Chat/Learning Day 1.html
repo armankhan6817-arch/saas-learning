@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 1 — Scope, Returns & References</title>
+<style>
+  :root{
+    --bg:#14161c;
+    --card:#1c1f28;
+    --ink:#e8e6df;
+    --dim:#9a97a3;
+    --gold:#e6b450;
+    --green:#7fd18b;
+    --red:#e07a7a;
+    --blue:#7aa8e0;
+    --line:#2c3040;
+    --code-bg:#10121a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    line-height:1.6;
+    padding:20px 16px 80px;
+    max-width:760px;
+    margin:0 auto;
+  }
+  header{margin-bottom:28px;border-bottom:2px solid var(--gold);padding-bottom:18px}
+  .eyebrow{color:var(--gold);font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+  h1{font-size:26px;margin-top:6px;line-height:1.25}
+  .sub{color:var(--dim);font-size:14px;margin-top:6px}
+
+  .rules{
+    background:var(--card);border:1px solid var(--gold);border-radius:12px;
+    padding:16px 18px;margin-bottom:30px;
+  }
+  .rules h2{font-size:15px;color:var(--gold);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
+  .rules li{margin:8px 0 8px 18px;font-size:15px}
+  .rules b{color:var(--gold)}
+
+  .q{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px;margin-bottom:22px;
+  }
+  .q-tag{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .q-num{color:var(--gold);font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase}
+  .badge{font-size:11px;padding:2px 10px;border-radius:20px;font-weight:600}
+  .b-miss{background:#3a2226;color:var(--red)}
+  .b-hit{background:#20321f;color:var(--green)}
+  .b-half{background:#38321c;color:var(--gold)}
+  .q h3{font-size:16px;margin-bottom:10px}
+  pre{
+    background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+    padding:12px 14px;overflow-x:auto;font-size:13.5px;line-height:1.55;
+    font-family:"SF Mono",Consolas,"Liberation Mono",monospace;
+    color:#d8dce8;margin:10px 0;
+  }
+  .prompt{font-size:14.5px;color:var(--dim);font-style:italic;margin-bottom:10px}
+
+  details{
+    margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
+  }
+  summary{
+    cursor:pointer;color:var(--blue);font-weight:600;font-size:14px;
+    list-style:none;user-select:none;
+  }
+  summary::before{content:"▸ ";color:var(--blue)}
+  details[open] summary::before{content:"▾ "}
+  .answer{margin-top:10px;font-size:15px}
+  .answer p{margin:8px 0}
+  .out{color:var(--green);font-weight:700;font-family:monospace}
+  .mistake{
+    background:#241d20;border-left:3px solid var(--red);
+    padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:14px;
+  }
+  .mistake b{color:var(--red)}
+  .insight{
+    background:#1d2420;border-left:3px solid var(--green);
+    padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:14px;
+  }
+  .insight b{color:var(--green)}
+  code{
+    background:var(--code-bg);padding:1px 6px;border-radius:4px;
+    font-family:"SF Mono",Consolas,monospace;font-size:13px;color:var(--gold);
+  }
+  .section-head{
+    color:var(--gold);font-size:13px;letter-spacing:2px;text-transform:uppercase;
+    font-weight:700;margin:34px 0 14px;display:flex;align-items:center;gap:10px;
+  }
+  .section-head::after{content:"";flex:1;height:1px;background:var(--line)}
+  .howto{
+    background:#1a1e2a;border:1px dashed var(--blue);border-radius:10px;
+    padding:12px 16px;margin-bottom:26px;font-size:14px;color:var(--dim);
+  }
+  .howto b{color:var(--blue)}
+  footer{margin-top:40px;color:var(--dim);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">saas-learning · week 2 · quiz log</div>
+  <h1>Day 1 — Scope, Return Values & References</h1>
+  <div class="sub">8 questions + 3 dungeon levels · javascript.info ch. 2–6 territory</div>
+</header>
+
+<div class="howto">
+  <b>How to revise with this file:</b> read each snippet, say the output out loud <i>before</i> tapping "Reveal answer". If you get one wrong, close the file and rewrite that snippet from memory tomorrow. That's the active-recall rule.
+</div>
+
+<div class="rules">
+  <h2>⚔️ The rules you earned today</h2>
+  <ul>
+    <li><b>Primitives copy the value. Objects copy the address.</b></li>
+    <li>A <code>return</code> value must be <b>caught</b> at the call site (<code>x = fn(x)</code>) or it's discarded.</li>
+    <li>The whole expression <code>fn(x)</code> <b>becomes</b> the returned value — not the argument inside it.</li>
+    <li><b>Mutate</b> (<code>push</code>, <code>obj.prop = ...</code>) → original changes. <b>Reassign</b> (<code>list = ...</code>) → original untouched.</li>
+    <li>No <code>return</code> → function gives <code>undefined</code> (never <code>null</code> — humans write null, JS gives undefined).</li>
+    <li><code>let</code> lives only inside its <code>{ }</code>. <code>var</code> leaks out. A for-loop's <code>( )</code> counts as inside.</li>
+    <li>Spread <code>[...arr]</code> = <b>shallow copy</b>: new shelf, same books.</li>
+  </ul>
+</div>
+
+<div class="section-head">Part 1 · Scope & Return Values</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Q1 · parameter shadowing</span><span class="badge b-miss">missed, then won</span></div>
+  <pre>let count = 5;
+
+function increase(count) {
+  count = count + 1;
+  return count;
+}
+
+increase(count);
+console.log(count);</pre>
+  <div class="prompt">What logs, and why?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p>Logs <span class="out">5</span>.</p>
+      <p>Two separate things happen: (1) the parameter <code>count</code> is a <b>copy</b> — incrementing it never touches the outer variable. (2) the returned <code>6</code> reaches the call site, but nothing catches it — no <code>=</code> — so it's <b>discarded</b>.</p>
+      <div class="mistake"><b>My mistake:</b> answered 6, thought the return "went back into" the outer count. It doesn't — return hands the value to the call site; the call site must catch it.</div>
+      <p>Fix: <code>count = increase(count);</code> → logs 6.</p>
+      <div class="insight"><b>Shop analogy:</b> the shop hands back your change — you still have to take it.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Q2 · missing return</span><span class="badge b-hit">first try ✓</span></div>
+  <pre>function double(x) {
+  x * 2;
+}
+
+let a = double(4);
+console.log(a);</pre>
+  <div class="prompt">What logs?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p>Logs <span class="out">undefined</span>.</p>
+      <p><code>x * 2</code> computes 8 and throws it away — there's no <code>return</code>. A function without return gives <code>undefined</code> automatically.</p>
+      <p><b>undefined vs null:</b> JS hands you <code>undefined</code> ("nothing here"). <code>null</code> only appears when a human deliberately writes it.</p>
+      <div class="insight"><b>Mirror of Q1:</b> Q1 returned but didn't catch. Q2 computed but didn't return. Either way, the value is lost.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Q3 · block scope + loop counter</span><span class="badge b-miss">missed, then won</span></div>
+  <pre>let message = "start";
+
+for (let i = 0; i &lt; 3; i++) {
+  let message = "loop " + i;
+}
+
+console.log(message);
+console.log(i);</pre>
+  <div class="prompt">What does each line print? (One might not print at all…)</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p>Line 1: <span class="out">"start"</span> — the inner <code>let message</code> is a brand-new variable that shadows the outer one inside the <code>{ }</code>, then dies.</p>
+      <p>Line 2: <span class="out">ReferenceError: i is not defined</span> — crash. <code>let i</code> in the loop's <code>( )</code> belongs to the loop's block scope. It dies when the loop ends.</p>
+      <div class="mistake"><b>My mistake:</b> answered "loop 2" and "2" — forgot that <code>let</code> inside braces creates a separate, temporary variable.</div>
+      <p><b>Follow-up I got right:</b> with <code>var i</code> instead, no crash — <code>var</code> ignores block scope and leaks out. It prints <span class="out">3</span>, not 2: the loop exits when <code>i++</code> pushes i to 3 and <code>i &lt; 3</code> fails. The counter always ends one past the last iteration.</p>
+    </div>
+  </details>
+</div>
+
+<div class="section-head">Part 2 · References — the big divide</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Q4 · array reference</span><span class="badge b-hit">first try ✓</span></div>
+  <pre>let nums = [10, 20, 30];
+let copy = nums;
+
+copy.push(40);
+
+console.log(nums.length);</pre>
+  <div class="prompt">What logs — what did <code>copy = nums</code> actually copy?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p>Logs <span class="out">4</span>.</p>
+      <p><code>copy = nums</code> copies the <b>reference</b> (the address), not the array. One array, two names. Pushing through either name changes the same shared array.</p>
+      <p><b>The rule:</b> primitives (numbers, strings, booleans) copy by value. Objects and arrays copy by address.</p>
+      <p>Independent copy: <code>let copy = [...nums]</code> (spread) or <code>structuredClone(nums)</code> for deep copies.</p>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Q5 · mutate vs reassign</span><span class="badge b-half">half right, then won</span></div>
+  <pre>function replace(list) {
+  list = ["new"];
+}
+
+function modify(list) {
+  list.push("new");
+}
+
+let arr1 = ["old"];
+let arr2 = ["old"];
+
+replace(arr1);
+modify(arr2);
+
+console.log(arr1);
+console.log(arr2);</pre>
+  <div class="prompt">What does each log?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><code>arr1</code>: <span class="out">["old"]</span> — <code>list = ["new"]</code> is a <b>reassignment</b>: it repoints the local parameter at a new array. The original is never touched.</p>
+      <p><code>arr2</code>: <span class="out">["old", "new"]</span> — <code>push</code> is a <b>mutation</b>: it goes through the shared reference and changes the original.</p>
+      <div class="mistake"><b>My mistake:</b> said arr1 would be "new". Reassigning a parameter is Q1 all over again — just with an address instead of a number.</div>
+      <div class="insight"><b>My breakthrough:</b> I thought <code>return</code> put the value "into the argument". Actually the <b>whole expression</b> <code>replace(arr1)</code> becomes the returned value — and it still needs <code>arr1 =</code> to catch it. Also: when you do catch it, the old array is <b>abandoned</b> (nothing points at it), not modified — a second variable still pointing at it would still see ["old"].</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Q6 · map</span><span class="badge b-hit">first try ✓</span></div>
+  <pre>let prices = [100, 250, 50];
+
+let doubled = prices.map(p =&gt; p * 2);
+
+console.log(prices[0]);
+console.log(doubled[1]);</pre>
+  <div class="prompt">Does map mutate? What is <code>p =&gt; p * 2</code> doing?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><span class="out">100</span> and <span class="out">500</span>.</p>
+      <p><code>map</code> never mutates — it builds a <b>new</b> array by running the arrow function on each item: <code>[200, 500, 100]</code>.</p>
+      <p><code>p =&gt; p * 2</code> = "take p, return p*2" — implicit return, no keyword needed in the short form.</p>
+      <p><b>File away:</b> mutators: <code>push, pop, sort, splice</code>. New-array makers: <code>map, filter, slice</code>. When unsure → MDN.</p>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Q7 · filter + map chain</span><span class="badge b-hit">first try ✓</span></div>
+  <pre>let scores = [45, 90, 72, 30, 88];
+
+let result = scores
+  .filter(s =&gt; s &gt;= 70)
+  .map(s =&gt; s + 10);
+
+console.log(result);
+console.log(scores.length);</pre>
+  <div class="prompt">Trace it in two stages.</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p>Stage 1 — <code>filter</code> <b>keeps</b> items passing the test: <code>[90, 72, 88]</code>.</p>
+      <p>Stage 2 — <code>map</code> adds 10 to each survivor: <span class="out">[100, 82, 98]</span>.</p>
+      <p><code>scores.length</code> is still <span class="out">5</span> — original untouched.</p>
+      <div class="insight"><b>Why it matters:</b> "filter the todos, map them to components" is the shape of half the code in any React app.</div>
+    </div>
+  </details>
+</div>
+
+<div class="section-head">Part 3 · The Scope Dungeon 🎮</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Level 1 (Q8) · object vs primitive extraction</span><span class="badge b-half">half right, then won</span></div>
+  <pre>let user = {
+  name: "armaan",
+  streak: 4
+};
+
+let profile = user;
+profile.streak = profile.streak + 1;
+
+console.log(user.streak);
+
+let name = user.name;
+name = "claude";
+
+console.log(user.name);</pre>
+  <div class="prompt">Why does the first change leak through but the second doesn't?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><span class="out">5</span> then <span class="out">"armaan"</span>.</p>
+      <p><code>profile = user</code> copies the address → mutation through <code>profile</code> hits the shared object.</p>
+      <p><code>user.name</code> is a <b>string (primitive)</b> → <code>name</code> gets an independent copy. Reassigning it never touches the object.</p>
+      <div class="mistake"><b>My mistake:</b> said "claude" — forgot that extracting a primitive out of an object gives a safe copy.</div>
+      <div class="insight"><b>The rule:</b> grab an object → you hold a live wire. Grab a primitive out of it → you hold a photocopy.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Level 2 · off-by-one</span><span class="badge b-hit">clean kill ✓</span></div>
+  <pre>let items = ["sword", "shield", "potion"];
+
+for (let i = 0; i &lt;= items.length; i++) {
+  console.log(items[i]);
+}</pre>
+  <div class="prompt">What prints — all lines — and what's the bug?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><span class="out">sword · shield · potion · undefined</span></p>
+      <p>The bug: <b>off-by-one</b>. <code>&lt;=</code> lets <code>i = 3</code> through, and <code>items[3]</code> doesn't exist → JS answers <code>undefined</code> (no crash, no null — same ghost as Q2).</p>
+      <p>Fix: <code>i &lt; items.length</code>.</p>
+      <div class="insight"><b>Contractor note:</b> AI writes this bug too. Now you'll spot it instantly.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Level 3 · shallow copy</span><span class="badge b-half">half right, then won</span></div>
+  <pre>let party = [
+  { name: "knight", hp: 100 },
+  { name: "mage", hp: 60 }
+];
+
+let squad = [...party];
+
+squad[0].hp = 25;
+squad.push({ name: "rogue", hp: 80 });
+
+console.log(party[0].hp);
+console.log(party.length);</pre>
+  <div class="prompt">What did spread actually copy — the objects, or something sneakier?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><code>party[0].hp</code>: <span class="out">25</span> — spread made a new <i>array</i>, but the items inside are object <b>references</b>. <code>squad[0]</code> and <code>party[0]</code> are two names for one knight — stab him through either, he bleeds in both.</p>
+      <p><code>party.length</code>: <span class="out">2</span> — the push stayed contained in the new array.</p>
+      <div class="mistake"><b>My mistake:</b> said hp would be 100 — forgot spread is <b>shallow</b>: new shelf, same books.</div>
+      <p>Deep copy (photocopies the books too): <code>structuredClone(party)</code>.</p>
+      <div class="insight"><b>Why it matters:</b> React state updates lean on spread constantly. "Why did my other component's data change??" is almost always this trap.</div>
+    </div>
+  </details>
+</div>
+
+<div class="section-head">Self-test for next revision</div>
+
+<div class="q">
+  <div class="answer">
+    <p>Answer these cold, out loud, no peeking:</p>
+    <ol style="margin-left:20px;font-size:15px">
+      <li style="margin:8px 0">A function returns a value but the call site is just <code>fn(x);</code> — what happens to the value?</li>
+      <li style="margin:8px 0">Which copies by value and which by address: string vs array?</li>
+      <li style="margin:8px 0">Inside a function, what's the difference between <code>list.push(1)</code> and <code>list = [1]</code> for the caller?</li>
+      <li style="margin:8px 0">What does a for-loop counter equal <i>after</i> the loop ends (with var)?</li>
+      <li style="margin:8px 0"><code>[...arr]</code> — what's shared, what's independent?</li>
+    </ol>
+    <p style="margin-top:12px;color:var(--dim)">If any answer takes more than 5 seconds → reopen that question card and rewrite the snippet from memory.</p>
+  </div>
+</div>
+
+<footer>saas-learning · day 1 quiz log · generated 16 Jul 2026 · next up: Level 4, the Summoning Circle (closures) 🔮</footer>
+
+</body>
+</html>

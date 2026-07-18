@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 2 — Closures, the Reference Model & Dungeon 2</title>
+<style>
+  :root{
+    --bg:#14161c;
+    --card:#1c1f28;
+    --ink:#e8e6df;
+    --dim:#9a97a3;
+    --gold:#e6b450;
+    --green:#7fd18b;
+    --red:#e07a7a;
+    --blue:#7aa8e0;
+    --purple:#b48ae0;
+    --line:#2c3040;
+    --code-bg:#10121a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    line-height:1.6;
+    padding:20px 16px 80px;
+    max-width:760px;
+    margin:0 auto;
+  }
+  header{margin-bottom:28px;border-bottom:2px solid var(--purple);padding-bottom:18px}
+  .eyebrow{color:var(--purple);font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+  h1{font-size:26px;margin-top:6px;line-height:1.25}
+  .sub{color:var(--dim);font-size:14px;margin-top:6px}
+
+  .rules{
+    background:var(--card);border:1px solid var(--purple);border-radius:12px;
+    padding:16px 18px;margin-bottom:30px;
+  }
+  .rules h2{font-size:15px;color:var(--purple);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
+  .rules li{margin:8px 0 8px 18px;font-size:15px}
+  .rules b{color:var(--gold)}
+
+  .q{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px;margin-bottom:22px;
+  }
+  .q-tag{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+  .q-num{color:var(--gold);font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase}
+  .badge{font-size:11px;padding:2px 10px;border-radius:20px;font-weight:600}
+  .b-miss{background:#3a2226;color:var(--red)}
+  .b-hit{background:#20321f;color:var(--green)}
+  .b-half{background:#38321c;color:var(--gold)}
+  .b-concept{background:#2a2138;color:var(--purple)}
+  pre{
+    background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+    padding:12px 14px;overflow-x:auto;font-size:13.5px;line-height:1.55;
+    font-family:"SF Mono",Consolas,"Liberation Mono",monospace;
+    color:#d8dce8;margin:10px 0;
+  }
+  .prompt{font-size:14.5px;color:var(--dim);font-style:italic;margin-bottom:10px}
+
+  details{
+    margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;
+  }
+  summary{
+    cursor:pointer;color:var(--blue);font-weight:600;font-size:14px;
+    list-style:none;user-select:none;
+  }
+  summary::before{content:"▸ ";color:var(--blue)}
+  details[open] summary::before{content:"▾ "}
+  .answer{margin-top:10px;font-size:15px}
+  .answer p{margin:8px 0}
+  .out{color:var(--green);font-weight:700;font-family:monospace}
+  .mistake{
+    background:#241d20;border-left:3px solid var(--red);
+    padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:14px;
+  }
+  .mistake b{color:var(--red)}
+  .insight{
+    background:#1d2420;border-left:3px solid var(--green);
+    padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:14px;
+  }
+  .insight b{color:var(--green)}
+  .concept{
+    background:#221d2c;border-left:3px solid var(--purple);
+    padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:14px;
+  }
+  .concept b{color:var(--purple)}
+  code{
+    background:var(--code-bg);padding:1px 6px;border-radius:4px;
+    font-family:"SF Mono",Consolas,monospace;font-size:13px;color:var(--gold);
+  }
+  .section-head{
+    color:var(--purple);font-size:13px;letter-spacing:2px;text-transform:uppercase;
+    font-weight:700;margin:34px 0 14px;display:flex;align-items:center;gap:10px;
+  }
+  .section-head::after{content:"";flex:1;height:1px;background:var(--line)}
+  .howto{
+    background:#1a1e2a;border:1px dashed var(--blue);border-radius:10px;
+    padding:12px 16px;margin-bottom:26px;font-size:14px;color:var(--dim);
+  }
+  .howto b{color:var(--blue)}
+  .diagram{
+    background:var(--code-bg);border:1px solid var(--line);border-radius:8px;
+    padding:12px 14px;font-family:"SF Mono",Consolas,monospace;font-size:13px;
+    line-height:1.7;color:#d8dce8;overflow-x:auto;white-space:pre;margin:10px 0;
+  }
+  footer{margin-top:40px;color:var(--dim);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">saas-learning · week 2 · quiz log</div>
+  <h1>Day 2 — Closures, the Reference Model &amp; Dungeon 2</h1>
+  <div class="sub">Dungeon 1 finale + the sticky-note model + full Dungeon 2 · pre-build for the to-do app</div>
+</header>
+
+<div class="howto">
+  <b>How to revise with this file:</b> same as day 1 — say the output out loud <i>before</i> tapping "Reveal answer". Purple cards are concept deep-dives from my own counter-questions; those are the highest-value re-reads.
+</div>
+
+<div class="rules">
+  <h2>⚔️ The rules earned today</h2>
+  <ul>
+    <li><b>The sticky-note model:</b> variables never refer to each other — each holds its own copy of an address. No wire between notes; only from each note to the object.</li>
+    <li><b>The global <code>=</code> logic:</b> <code>=</code> never travels. The <i>left-hand expression</i> does. Bare variable on the left → rewrites that note. Dot/bracket on the left → travels through the address, modifies the shared thing.</li>
+    <li><b>Closure:</b> an inner function keeps access to its outer function's variables even after the outer returns — it carries a backpack 🎒. Each call to the outer function stitches a <i>fresh</i> backpack.</li>
+    <li><b>Callback:</b> a function you hand over (no <code>()</code>), to be called later by someone else — the browser, <code>map</code>, <code>filter</code>. You provide the <i>what</i>; they decide the <i>when</i>.</li>
+    <li><b>Definition parens vs calling parens:</b> parens between <code>function</code> and <code>{</code> = parameter list. Parens <i>after</i> a function value = play the card.</li>
+    <li><b>Strings are immutable.</b> Every string method returns a new string; the original is never touched.</li>
+    <li>Missing <code>let</code> inside a function = grabbing (and possibly hijacking) the outer variable.</li>
+  </ul>
+</div>
+
+<div class="section-head">Part 1 · Dungeon 1 Finale</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Spread follow-ups (a &amp; b)</span><span class="badge b-hit">both ✓</span></div>
+  <pre>// a)
+let tags = ["js", "css"];
+let t2 = [...tags];
+t2.push("html");
+// tags.length ?
+
+// b)
+let user = { name: "armaan", settings: { theme: "dark" } };
+let clone = { ...user };
+clone.settings.theme = "light";
+// mutation or reassignment? which object did it hit?</pre>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p>a) <span class="out">2</span> — spread made a new array; the push stayed contained.</p>
+      <p>b) <b>Mutation</b>, and it hit the <b>shared inner <code>settings</code> object</b> — one object that both <code>user</code> and <code>clone</code> point to. So <code>user.settings.theme</code> is also "light" now. 😱</p>
+      <div class="concept"><b>Key generalization (my own question):</b> spread on an array of primitives = effectively a full safe copy — "shallow" only bites when items are references. Photocopying loose papers = real copies; photocopying library cards = duplicate cards pointing at the same books. Spread works on objects too: <code>{ ...user }</code> — same one-level rule. Deep copy = <code>structuredClone</code>.</div>
+      <div class="insight"><b>React preview:</b> <code>{ ...user, streak: 5 }</code> — copy everything, override one field — is THE idiom for updating state from week 5 onward.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Level 4 · The Summoning Circle — closures</span><span class="badge b-hit">solved with hints ✓</span></div>
+  <pre>function makeCounter() {
+  let count = 0;
+
+  return function() {
+    count = count + 1;
+    return count;
+  };
+}
+
+let counterA = makeCounter();
+let counterB = makeCounter();
+
+console.log(counterA());
+console.log(counterA());
+console.log(counterB());</pre>
+  <div class="prompt">Locals die when their function returns… so how is <code>count</code> surviving?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><span class="out">1</span>, <span class="out">2</span>, <span class="out">1</span></p>
+      <p><code>makeCounter()</code> returns a <b>function</b> — an unexecuted recipe card. <code>counterA</code> catches it (Q1 lesson: return values must be caught). The <code>()</code> in <code>counterA()</code> plays the card.</p>
+      <p><b>The riddle:</b> normally <code>count</code> dies at return — but the inner function still uses it, and JS keeps a variable alive as long as some function needs it. The returned function carries its birthplace's variables in a backpack 🎒.</p>
+      <p><code>counterB = makeCounter()</code> is a <b>separate call</b> → fresh <code>count = 0</code>, fresh backpack → logs 1, not 3. Two counters, two independent counts.</p>
+      <div class="concept"><b>Depth calibration:</b> recognition level only for now. Skim javascript.info 6.3 first half later; skip lexical-environment theory. Why it's non-negotiable: react hooks ARE closures — <code>useState</code> only makes sense with the backpack idea.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Level 5 · Final Boss — The Amalgam</span><span class="badge b-half">two attempts, then won</span></div>
+  <pre>function process(team) {
+  team.push("dave");
+  team = ["eve"];
+  team.push("frank");
+  return team;
+}
+
+let heroes = ["alice", "bob"];
+let result = process(heroes);
+
+console.log(heroes);
+console.log(result);</pre>
+  <div class="prompt">Which lines touch the original array, which don't, and why?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><code>heroes</code>: <span class="out">["alice", "bob", "dave"]</span> · <code>result</code>: <span class="out">["eve", "frank"]</span></p>
+      <p>Line by line:</p>
+      <p>1. <code>team.push("dave")</code> — mutation through the shared address → heroes' array gains "dave".<br>
+      2. <code>team = ["eve"]</code> — reassignment → team's note now points at a brand-new array. Link to heroes broken.<br>
+      3. <code>team.push("frank")</code> — mutates the <b>new</b> array only → <code>["eve", "frank"]</code>. Push adds to the <b>end</b>.<br>
+      4. <code>return team</code> — returns the new array; call site catches it into <code>result</code>.</p>
+      <div class="mistake"><b>My mistakes:</b> first swapped the effects entirely; second attempt had "frank, eve" — forgot push appends to the end, not the front.</div>
+      <div class="insight"><b>What this boss integrates:</b> Q1 (call site catching) + Q4 (shared reference) + Q5 (mutate vs reassign) in one snippet — the full week-2 reference model.</div>
+    </div>
+  </details>
+</div>
+
+<div class="section-head">Part 2 · The Sticky-Note Model (my counter-question)</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Deep-dive · why doesn't <code>team = ["eve"]</code> touch heroes?</span><span class="badge b-concept">concept</span></div>
+  <div class="prompt">My question: "whenever we use team it refers to heroes… so why didn't <code>team = ["eve"]</code> add eve to heroes?"</div>
+  <details>
+    <summary>Reveal the model</summary>
+    <div class="answer">
+      <p><b>Correction first:</b> <code>team</code> never refers to <code>heroes</code>. Both are independent variables holding the <b>same address</b>. No wire between the sticky notes — only from each note to the array.</p>
+      <div class="diagram">heroes → [ 📦 #742 ] ─┐
+                      ├──→ #742: ["alice","bob"]
+team   → [ 📦 #742 ] ─┘
+
+after  team = ["eve"]:
+
+heroes → [ 📦 #742 ] ──→ #742: ["alice","bob","dave"]
+team   → [ 📦 #901 ] ──→ #901: ["eve"]</div>
+      <p><code>team.push(...)</code> → reads team's note, <i>travels to #742</i>, modifies the array there. Heroes' note also says #742, so it sees the change.</p>
+      <p><code>team = ["eve"]</code> → never visits #742. Builds a new array at #901, overwrites <b>team's note only</b>. Assignment only ever changes the variable on the left of <code>=</code>.</p>
+      <div class="concept"><b>The global logic (no exceptions):</b> <code>=</code> means "compute the right side, store it in the slot named on the left." The only question: where does that slot live?<br><br>
+      • <code>team</code> — slot is the variable itself. No travel.<br>
+      • <code>team[0]</code>, <code>team.leader</code>, <code>team.settings.theme</code> — slot lives <i>inside the object</i>. JS must resolve <code>team</code>, travel to the address, then write into the slot there.<br><br>
+      <b><code>=</code> never travels. The left-hand expression travels — or doesn't.</b> And <code>.push()</code> is the travel case in disguise: resolving <code>team.push</code> requires the trip.</div>
+      <div class="mistake"><b>Refinement of my first paraphrase:</b> it's not the <code>=</code> sign that decides — it's what's on its left. <code>team = ["eve"]</code> (bare) = reassignment. <code>team[0] = "eve"</code> (bracket) = mutation. Both have <code>=</code>.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">The hijack · missing <code>let</code></span><span class="badge b-hit">first try ✓</span></div>
+  <pre>function process(team) {
+  heroes = team;      // no let!
+  team.push("x");
+}
+
+let heroes = ["alice"];
+let villains = ["zed"];
+
+process(villains);
+console.log(heroes);</pre>
+  <div class="prompt">What logs? And what changes if it were <code>let heroes = team</code>?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><span class="out">["zed", "x"]</span> — no <code>let</code> means the line grabs the <b>outer</b> heroes and rewrites its note to villains' address. The push then mutates that shared array. Both variables now show <code>["zed","x"]</code>; poor <code>["alice"]</code> is abandoned.</p>
+      <p><b>With <code>let</code>:</b> a brand-new local variable shadows the outer one, exists for two lines, dies at function end. Outer heroes untouched → logs <span class="out">["alice"]</span>. (The push still mutates villains either way.)</p>
+      <div class="insight"><b>Bug class unlocked:</b> accidentally grabbing outer variables by forgetting <code>let</code>. Same shadowing behavior in a parameter (Q1), a loop block (Q3), or any <code>{ }</code>.</div>
+    </div>
+  </details>
+</div>
+
+<div class="section-head">Part 3 · Dungeon 2 — The Proving Grounds</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Level 1 · Destructuring</span><span class="badge b-hit">4/4 first try ✓</span></div>
+  <pre>let user = { name: "armaan", city: "delhi", streak: 7 };
+
+let { name, streak } = user;
+
+let scores = [88, 92, 75];
+let [first, , third] = scores;
+
+console.log(name);
+console.log(streak);
+console.log(first);
+console.log(third);</pre>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><span class="out">"armaan"</span> · <span class="out">7</span> · <span class="out">88</span> · <span class="out">75</span></p>
+      <p>Object destructuring pulls by <b>name</b> (matching keys); array destructuring pulls by <b>position</b>. The lonely comma in <code>[first, , third]</code> is a <b>skip</b> — it holds seat 1 so <code>third</code> lands on index 2.</p>
+      <div class="concept"><b>Week-5 add-ons, recognize only:</b><br><code>let { name: userName } = user;</code> — grab <code>name</code>, call the variable <code>userName</code>.<br><code>let { level = 1 } = user;</code> — key missing → default kicks in.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Level 2 · Reduce</span><span class="badge b-hit">first try, full trace ✓</span></div>
+  <pre>let cart = [120, 80, 250];
+
+let total = cart.reduce((sum, price) => sum + price, 0);
+
+console.log(total);</pre>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><span class="out">450</span></p>
+      <div class="diagram">pass 1: sum=0,   price=120 → 120
+pass 2: sum=120, price=80  → 200
+pass 3: sum=200, price=250 → 450</div>
+      <p><b>Each pass's return value becomes the next pass's <code>sum</code></b>; the trailing <code>0</code> seeds pass 1. That running accumulator is all reduce is.</p>
+      <div class="concept"><b>Recognition only:</b> the accumulator can be an object or array too — e.g. turning a todo list into counts per category. Read it when you meet it.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Level 3 · Strings</span><span class="badge b-half">3.5/4 with decoder ring</span></div>
+  <pre>let email = "  Armaan@Gmail.COM  ";
+
+let clean = email.trim().toLowerCase();
+let username = clean.split("@")[0];
+
+let greeting = `hello, ${username}! you have ${3 + 2} tasks`;
+
+console.log(clean);
+console.log(username);
+console.log(greeting);
+console.log(email.length);</pre>
+  <div class="prompt">Do string methods mutate the original?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><span class="out">"armaan@gmail.com"</span> · <span class="out">"armaan"</span> · <span class="out">"hello, armaan! you have 5 tasks"</span> · <span class="out">20</span></p>
+      <p>Decoder ring: <code>.trim()</code> cuts edge whitespace · <code>.toLowerCase()</code> flattens case · <code>.split("@")</code> chops into an array <code>["armaan","gmail.com"]</code> · <code>`${...}`</code> evaluates and glues in · chaining runs left to right (same flow as filter→map).</p>
+      <p><b>The trap:</b> strings are primitives — <b>immutable</b>. Every method returns a NEW string. So <code>email</code> still has its spaces: 16 chars + 4 spaces = 20.</p>
+      <div class="mistake"><b>My near-miss:</b> measured the cleaned string (~14–16) instead of the untouched original.</div>
+      <div class="insight"><b>Meta-win:</b> walked in saying "I don't know string functions", traced all four lines anyway. Reading unfamiliar code without freezing IS the general-contractor skill — AI writes the methods; I trace them.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Level 4 · The DOM Gate</span><span class="badge b-hit">3/3 ✓</span></div>
+  <pre>&lt;button id="add-btn"&gt;Add task&lt;/button&gt;
+&lt;ul id="task-list"&gt;&lt;/ul&gt;</pre>
+  <pre>let btn = document.querySelector("#add-btn");
+let list = document.querySelector("#task-list");
+
+btn.addEventListener("click", function() {
+  let item = document.createElement("li");
+  item.textContent = "new task";
+  list.appendChild(item);
+});</pre>
+  <div class="prompt">When does the inner function run? After 3 clicks, how many &lt;li&gt;s?</div>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p>Click → create an <code>&lt;li&gt;</code>, set its text, append to the list. The inner function runs <b>not at script load</b> — script load only <i>registers</i> it; every click <i>fires</i> it. 3 clicks → 3 fresh runs → <span class="out">3 &lt;li&gt; elements</span>.</p>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Deep-dive · Callbacks (my counter-question)</span><span class="badge b-concept">concept</span></div>
+  <div class="prompt">"What do you mean by callback, and why didn't <code>function() {...}</code> run immediately — its parens are right there?"</div>
+  <details>
+    <summary>Reveal the model</summary>
+    <div class="answer">
+      <p><b>Callback = a function you hand to someone else, to be called later, by them, not you.</b></p>
+      <pre>greet;     // the card itself. nothing runs.
+greet();   // () AFTER a function value plays the card.</pre>
+      <p><b>The parens confusion:</b> in <code>function() {...}</code>, those parens are the <b>parameter list</b> — anatomy of the definition (<code>function name(params) { body }</code>), here just empty. Position is everything: parens <i>between</i> <code>function</code> and <code>{</code> = parameter list. Parens <i>after</i> a finished function value = calling parens.</p>
+      <p><b>Run it immediately?</b> Wrap and call — <code>(function(){...})()</code> — an IIFE. Arrows make it visible: <code>() =&gt; {...}</code> is the definition; <code>(() =&gt; {...})()</code> defines and plays on the spot. Recognition only.</p>
+      <p><b>I've used callbacks all along:</b> <code>map(fn)</code> — once per item · <code>filter(fn)</code> — per item, keep if true · <code>reduce(fn, 0)</code> — per pass · <code>addEventListener("click", fn)</code> — per click, forever. <b>You provide the what; the other function decides the when and how-many-times.</b></p>
+      <div class="mistake"><b>Classic trap:</b> <code>addEventListener("click", greet())</code> — the <code>()</code> plays the card NOW; greet returns nothing → the browser is handed <code>undefined</code> as its "card". Q1 + Q2 ghosts reunited. Correct: pass <code>greet</code> bare.</div>
+      <div class="insight"><b>React preview:</b> <code>onClick={handleAdd}</code> — note: no parens. Same rule, week 5.</div>
+    </div>
+  </details>
+</div>
+
+<div class="q">
+  <div class="q-tag"><span class="q-num">Final Boss · The To-Do Golem</span><span class="badge b-hit">3/3 first strike ✓✓</span></div>
+  <pre>let tasks = [
+  { text: "learn js", done: true },
+  { text: "build app", done: false },
+  { text: "ship it", done: false }
+];
+
+let pending = tasks.filter(t => !t.done);
+let labels = pending.map(t => t.text.toUpperCase());
+
+let { text } = tasks[1];
+
+let summary = `${pending.length} left: ${labels.join(", ")}`;
+
+console.log(labels);
+console.log(text);
+console.log(summary);</pre>
+  <details>
+    <summary>Reveal answer</summary>
+    <div class="answer">
+      <p><span class="out">["BUILD APP", "SHIP IT"]</span><br>
+      <span class="out">"build app"</span><br>
+      <span class="out">"2 left: BUILD APP, SHIP IT"</span></p>
+      <p><code>!t.done</code> = "not done" → filter keeps two tasks · map uppercases into a new array · destructuring grabs <code>text</code> from <code>tasks[1]</code> · template literal + <code>.join(", ")</code> assembles the summary.</p>
+      <p>Log 2 stays lowercase because <code>toUpperCase</code> returned <b>new</b> strings — immutability, applied.</p>
+      <div class="insight"><b>This snippet IS the to-do app in miniature:</b> array of task objects → filter → map → render. Every line of the week-2 build was in this boss.</div>
+    </div>
+  </details>
+</div>
+
+<div class="section-head">Self-test for next revision</div>
+
+<div class="q">
+  <div class="answer">
+    <p>Cold, out loud, no peeking:</p>
+    <ol style="margin-left:20px;font-size:15px">
+      <li style="margin:8px 0"><code>team = ["eve"]</code> vs <code>team[0] = "eve"</code> — which travels to the shared array, and what's the one-line rule?</li>
+      <li style="margin:8px 0">A returned inner function still uses its parent's local variable — what happens to that variable, and what's this called?</li>
+      <li style="margin:8px 0">Two calls to <code>makeCounter()</code> — one shared count or two? Why?</li>
+      <li style="margin:8px 0"><code>addEventListener("click", greet())</code> — what does the browser actually receive?</li>
+      <li style="margin:8px 0">Parens between <code>function</code> and <code>{</code> vs parens after a function value — what does each do?</li>
+      <li style="margin:8px 0"><code>"  Hi  ".trim()</code> — what happens to the original string?</li>
+      <li style="margin:8px 0">Inside a function, <code>heroes = team</code> with no <code>let</code> — what does it grab? With <code>let</code>?</li>
+      <li style="margin:8px 0">In <code>reduce((sum, x) =&gt; sum + x, 0)</code> — where does each pass's <code>sum</code> come from?</li>
+    </ol>
+    <p style="margin-top:12px;color:var(--dim)">Any answer over 5 seconds → reopen that card, rewrite the snippet from memory.</p>
+  </div>
+</div>
+
+<footer>saas-learning · day 2 quiz log · dungeons 1 &amp; 2 cleared, zero lives lost in D2 · next: build the to-do app 🏗️</footer>
+
+</body>
+</html>

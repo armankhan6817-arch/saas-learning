@@ -15,3 +15,9 @@ Format per entry:
 - **Came up:** 2026-07-05, prime-number detector (`practice 2.html`), Week 1 loops practice.
 - **Why deferred:** the brute-force version (checking every divisor up to `i-1`) is correct and fine for learning loops. The optimization is about efficiency, not correctness — not a Week 1 concern.
 - **Revisit when:** later, once loops/logic are second nature — or whenever performance actually matters on a real project. Involves `Math.sqrt()`.
+
+### DOM geometry & advanced events (skipped for the to-do app)
+- **Topic:** Element size/scrolling, window sizes, coordinates (the DOM "geometry" sections), plus dispatching custom events, and the deep details of event bubbling/capturing.
+- **Came up:** 2026-07-14, Week 2 DOM reading plan.
+- **Why deferred:** the to-do app only needs `querySelector`, modifying the DOM (`createElement`/`append`/`remove`/`textContent`), `classList`, and `addEventListener`. Geometry/coordinates are for drag-drop, positioning, infinite scroll — none of which apply yet.
+- **Revisit when:** a real project needs positioning/measuring elements (custom dropdowns, drag-drop, sticky/scroll effects) or custom event systems.
