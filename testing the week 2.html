@@ -1,0 +1,41 @@
+<!doctype html>
+<body>
+  <style>
+    .done {
+      font-family: sans-serif;
+      text-decoration: line-through;
+      color: grey;
+    }
+  </style>
+
+  <input id="task" />
+  <button id="add">Add</button>
+  <ul id="list"></ul>
+
+  <script>
+    const button = document.querySelector("#add");
+    let list = document.querySelector("#list");
+    let listItems = document.querySelectorAll("li");
+
+    button.addEventListener("click", function (event) {
+      let taskValue = document.querySelector("#task").value;
+      let newItem = document.createElement("li");
+      newItem.addEventListener("click", function (event) {
+        // console.log(newItem.textContent);
+        newItem.classList.toggle("done");
+      });
+      newItem.textContent = taskValue;
+      list.append(newItem);
+
+      console.log(taskValue);
+
+      document.querySelector("#task").value = "";
+      document.querySelector("#task").focus();
+
+      // let items = document.querySelectorAll("li");
+      // for (let n = 0; n < items.length; n++) {
+      //   console.log(items[n].value);
+      // }
+    });
+  </script>
+</body>
