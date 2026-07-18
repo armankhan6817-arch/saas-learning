@@ -44,3 +44,8 @@ Format:
 - **Doubt:** Why not add the `done` class directly in HTML when appending the `<li>`.
 - **Concept:** "Done" is a runtime state that changes on user action, not a fixed property. Baking it in would make every new item start struck-through. Fixed things → HTML/CSS; things that change with user actions → toggled by JS.
 - **Fix:** Create items without `done`; add/remove it dynamically with `classList.toggle` on click.
+
+- **Date:** 2026-07-18
+- **Doubt:** Didn't know clicking the delete button inside an li also triggers the li's own click listener (invisible here because the item is removed instantly).
+- **Concept:** Event bubbling — a click on a child element also fires click handlers on all its ancestors. Fix concept: event.stopPropagation() in the child's handler.
+- **Fix:** In the delete button's listener, call event.stopPropagation() so the li's toggle handler doesn't also run.
