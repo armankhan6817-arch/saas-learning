@@ -15,27 +15,28 @@
   <script>
     const button = document.querySelector("#add");
     let list = document.querySelector("#list");
-    let listItems = document.querySelectorAll("li");
 
     button.addEventListener("click", function (event) {
       let taskValue = document.querySelector("#task").value;
       let newItem = document.createElement("li");
+      let DeleteButton = document.createElement("button");
+      DeleteButton.textContent = "x";
       newItem.addEventListener("click", function (event) {
-        // console.log(newItem.textContent);
+        console.log("clicked");
         newItem.classList.toggle("done");
       });
       newItem.textContent = taskValue;
       list.append(newItem);
+      newItem.append(DeleteButton);
+      DeleteButton.addEventListener("click", function (event) {
+        newItem.remove();
+        event.stopPropagation();
+      });
 
       console.log(taskValue);
 
       document.querySelector("#task").value = "";
       document.querySelector("#task").focus();
-
-      // let items = document.querySelectorAll("li");
-      // for (let n = 0; n < items.length; n++) {
-      //   console.log(items[n].value);
-      // }
     });
   </script>
 </body>
