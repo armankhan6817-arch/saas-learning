@@ -13,11 +13,23 @@
   <ul id="list"></ul>
 
   <script>
-    const button = document.querySelector("#add");
     let list = document.querySelector("#list");
+
+    let todos = localStorage.getItem("todos")
+      ? JSON.parse(localStorage.getItem("todos"))
+      : [];
+    //list.append(todos);
+    let saveTodos = () => {
+      localStorage.setItem("todos", JSON.stringify(todos));
+    };
+
+    const button = document.querySelector("#add");
+    // let list = document.querySelector("#list");
 
     button.addEventListener("click", function (event) {
       let taskValue = document.querySelector("#task").value;
+      todos.push({ taskname: taskValue, done: false });
+      saveTodos();
       let newItem = document.createElement("li");
       let DeleteButton = document.createElement("button");
       DeleteButton.textContent = "x";
@@ -28,13 +40,16 @@
       newItem.textContent = taskValue;
       list.append(newItem);
       newItem.append(DeleteButton);
+
       DeleteButton.addEventListener("click", function (event) {
         newItem.remove();
+        todos = todos.filter((todo) => todo.taskname !== taskValue);
+        saveTodos();
         event.stopPropagation();
       });
 
       console.log(taskValue);
-
+      console.log(todos);
       document.querySelector("#task").value = "";
       document.querySelector("#task").focus();
     });

@@ -49,3 +49,33 @@ Format:
 - **Doubt:** Didn't know clicking the delete button inside an li also triggers the li's own click listener (invisible here because the item is removed instantly).
 - **Concept:** Event bubbling — a click on a child element also fires click handlers on all its ancestors. Fix concept: event.stopPropagation() in the child's handler.
 - **Fix:** In the delete button's listener, call event.stopPropagation() so the li's toggle handler doesn't also run.
+
+- **Date:** 2026-07-18
+- **Error:** After localStorage.setItem("array", ...), tried array.push(...) — expected the storage KEY to exist as a variable. Also called JSON.parse but never assigned the result, then wondered where the array went.
+- **Concept:** Storage keys are labels inside localStorage, not JS variables; and any expression result is lost unless assigned (let todos = JSON.parse(...)).
+- **Fix:** Full cycle: let todos = JSON.parse(localStorage.getItem(key)); todos.push(x); localStorage.setItem(key, JSON.stringify(todos)).
+
+- **Date:** 2026-07-18
+- **Error:** Typed json.stringify — ReferenceError.
+- **Concept:** JS is case-sensitive; the global object is JSON (all caps).
+- **Fix:** JSON.stringify / JSON.parse.
+
+- **Date:** 2026-07-18
+- **Error:** Defined saveTodos inside the click handler (and without let/const) but never called it — expected defining a function to run it. Then, when loading, wrote let todos = [getItem(...) ? getItem(...) : []] — wrapped the whole thing in [ ], creating a nested array, and forgot JSON.parse on the stored string.
+- **Concept:** Defining vs calling a function; [x] builds a NEW one-element array around x; getItem always returns a string (or null) so it must go through JSON.parse.
+- **Fix:** Define saveTodos once at top level, call it after each change; load with: let todos = JSON.parse(localStorage.getItem("todos")) || [];
+
+- **Date:** 2026-07-22
+- **Error:** In delete handler, compared against showTasks.textContent — but the li contains the "x" button too, so textContent is "milkx" and filter matched nothing (same textContent-includes-children trap as earlier the same session).
+- **Concept:** textContent returns ALL text inside an element including children. Capture the clean input value in a variable at add time and reuse it (closure), instead of re-reading the DOM.
+- **Fix:** let taskName = textBox.value at top of add handler; use taskName for li text, push, and filter comparison.
+
+- **Date:** 2026-07-22
+- **Doubt:** Thought the delete listener could not see textBox because it wasn't declared in the immediate outer function.
+- **Concept:** Scope is a chain up to the top level — top-level variables are visible to every function. The real issue with textBox.value in a later-running handler is WHEN it reads: .value is a live read at click time (empty after clearing), vs a variable captured at add time via closure.
+- **Fix:** Distinguish live DOM reads (now) from closure-captured variables (frozen per add-run).
+
+- **Date:** 2026-07-22
+- **Error:** Repeatedly put the render loop INSIDE showTodos(todo) and ignored the parameter (looped todos[i] over one reused li, read textBox.value in a render function). Struggled 3 attempts with extracting a per-item function.
+- **Concept:** Division of labor: a render function handles ONE item via its parameter; the loop (forEach) lives OUTSIDE and calls it once per element. Also re-hit: one element appended N times = one item overwritten N times.
+- **Fix:** function showTodos(todo) builds one li from todo.taskname (no loop, no DOM reads); todos.forEach(showTodos) at top level; add handler pushes then calls showTodos(newTodo).
