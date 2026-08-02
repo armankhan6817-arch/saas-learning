@@ -1,0 +1,56 @@
+<!doctype html>
+
+<body>
+  <style>
+    .done {
+      font-family: sans-serif;
+      text-decoration: line-through;
+      color: grey;
+    }
+  </style>
+  <input id="textBox" />
+  <button id="addBt">Add</button>
+  <ul id="Plist"></ul>
+  <script>
+    let todos = localStorage.getItem("todos")
+      ? JSON.parse(localStorage.getItem("todos"))
+      : [];
+
+    let pList = document.querySelector("#Plist");
+    let AddButton = document.querySelector("#addBt");
+    let textBox = document.querySelector("#textBox");
+    textBox.focus();
+
+    AddButton.addEventListener("click", function (event) {
+      let showTasks = document.createElement("li");
+      let delTask = document.createElement("button");
+      let taskValue = textBox.value;
+
+      showTasks.textContent = taskValue;
+      pList.appendChild(showTasks);
+      delTask.textContent = "x";
+      showTasks.appendChild(delTask);
+
+      textBox.value = "";
+      textBox.focus();
+
+      todos.push({ taskname: taskValue, done: false });
+      saveTodos();
+
+      showTasks.addEventListener("click", function (event) {
+        showTasks.classList.toggle("done");
+      });
+      delTask.addEventListener("click", function (event) {
+        showTasks.remove();
+        todos = todos.filter((todo) => todo.taskname !== taskValue);
+        saveTodos();
+        event.stopPropagation();
+      });
+      console.log(todos);
+    });
+
+    let saveTodos = () => {
+      localStorage.setItem("todos", JSON.stringify(todos));
+    };
+  </script>
+</body>
