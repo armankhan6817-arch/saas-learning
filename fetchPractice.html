@@ -1,0 +1,18 @@
+<!doctype html>
+
+<ul id="Plist"></ul>
+
+<script>
+  "use strict";
+
+  let list = document.querySelector("#Plist");
+  let showTasks = document.createElement("li");
+
+  fetch("https://api.github.com/users/armankhan6817-arch")
+    .then((response) => response.json())
+    .then((myProfile) => {
+      console.log(`${myProfile.public_repos} ${myProfile.login}`);
+      showTasks.textContent = myProfile.public_repos + " " + myProfile.login;
+      list.appendChild(showTasks);
+    });
+</script>
