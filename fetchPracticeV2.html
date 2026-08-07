@@ -1,0 +1,26 @@
+<!doctype html>
+
+<ul id="Plist"></ul>
+
+<script>
+  "use strict";
+
+  let list = document.querySelector("#Plist");
+  let showTasks = document.createElement("li");
+
+  async function loadProfile() {
+    try {
+      let LoadingFiles = await fetch(
+        "https://api.github.com/users/armankhan6817-arch",
+      );
+      let gotData = await LoadingFiles.json();
+      console.log(`${gotData.public_repos} ${gotData.login}`);
+      showTasks.textContent = gotData.public_repos + " " + gotData.login;
+      list.appendChild(showTasks);
+    } catch (err) {
+      console.log("Something went wrong", err);
+    }
+  }
+
+  loadProfile();
+</script>

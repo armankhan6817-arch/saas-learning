@@ -79,3 +79,23 @@ Format:
 - **Error:** Repeatedly put the render loop INSIDE showTodos(todo) and ignored the parameter (looped todos[i] over one reused li, read textBox.value in a render function). Struggled 3 attempts with extracting a per-item function.
 - **Concept:** Division of labor: a render function handles ONE item via its parameter; the loop (forEach) lives OUTSIDE and calls it once per element. Also re-hit: one element appended N times = one item overwritten N times.
 - **Fix:** function showTodos(todo) builds one li from todo.taskname (no loop, no DOM reads); todos.forEach(showTodos) at top level; add handler pushes then calls showTodos(newTodo).
+
+- **Date:** 2026-08-03
+- **Error:** Used fetched data (myProfile.login) in top-level code before the fetch resolved — ReferenceError. Then chained a third .then expecting the same data, but each .then receives only what the previous callback RETURNED (console.log returns undefined).
+- **Concept:** Async timing — fetched data exists only inside the .then callback that receives it; .then chains pass return values, not the original data.
+- **Fix:** Do all work with the data inside its callback; one callback body ({ }) can hold many statements — no extra .then needed.
+
+- **Date:** 2026-08-03
+- **Error:** Multi-statement arrow function without { } braces — syntax error.
+- **Concept:** Braceless arrow bodies allow exactly one expression; multiple statements need { }.
+- **Fix:** .then((data) => { stmt1; stmt2; });
+
+- **Date:** 2026-08-03
+- **Doubt:** Thought first .then gives "the data from the url as a whole object."
+- **Concept:** First .then gives a Response object (envelope: status/headers, unread body); response.json() reads the body and returns ANOTHER promise — hence the second .then.
+- **Fix:** .then(r => r.json()).then(data => ...) — two waits, two thens.
+
+- **Date:** 2026-08-07
+- **Doubt:** Described the Response as "headings of the web page" — conflated HTTP response headers with page headings; fuzzy on what each await in fetch waits for.
+- **Concept:** First await = server replied (Response object: status + headers, body unread); second await = body fully read and parsed into a JS object. Headers are response metadata, unrelated to <h1> headings.
+- **Fix:** "Did they reply?" then "read the reply into an object" — two waits, two awaits.
