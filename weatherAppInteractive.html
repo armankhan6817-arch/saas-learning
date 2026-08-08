@@ -1,0 +1,66 @@
+<!doctype html>
+
+<ul id="Temp"></ul>
+<button onclick="loadCords()">Load Weather</button>
+<input type="text" id="weatherCity" placeholder="Enter City Name" />
+
+<script>
+  "use strict";
+
+  let list = document.querySelector("#Temp");
+
+  let weatherCity = document.querySelector("#weatherCity");
+
+  async function loadWeather(lat, long, city) {
+    try {
+      let showTemps = document.createElement("li");
+      let LoadingFiles = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current=temperature_2m`,
+      );
+      if (!LoadingFiles.ok) {
+        throw new Error(`HTTP error! status: ${LoadingFiles.status}`);
+      }
+
+      let gotData = await LoadingFiles.json();
+      console.log(`${gotData.current.temperature_2m}`);
+      showTemps.textContent =
+        city +
+        " " +
+        gotData.current.temperature_2m +
+        " " +
+        gotData.current_units.temperature_2m;
+      list.appendChild(showTemps);
+    } catch (err) {
+      console.log("Something went wrong", err);
+    }
+  }
+
+  async function loadCords() {
+    try {
+      let SearchedCity = weatherCity.value;
+      let LoadingFiles = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${SearchedCity}&count=1`,
+      );
+      if (!LoadingFiles.ok) {
+        throw new Error(`HTTP error! status: ${LoadingFiles.status}`);
+      }
+
+      let gotData = await LoadingFiles.json();
+      if (!gotData.results || gotData.results.length === 0) {
+        throw new Error("No data found for the searched city");
+      }
+      console.log(
+        `${gotData.results[0].latitude}` +
+          " " +
+          `${gotData.results[0].longitude}`,
+      );
+      loadWeather(
+        gotData.results[0].latitude,
+        gotData.results[0].longitude,
+        SearchedCity,
+      );
+    } catch (err) {
+      console.log("Something went wrong", err);
+    }
+  }
+</script>

@@ -109,3 +109,8 @@ Format:
 - **Error:** Repeated brace scrambling while editing nested blocks: put catch inside the else block; later deleted the if but kept the throw (unconditional throw = success path unreachable) and lost the function's closing brace. Also once replaced throw with console.log + else, creating two separate error paths.
 - **Concept:** Block structure — catch pairs with try at the same level; throw exits immediately so no else is needed after it; every { needs its matching }. throw exists to funnel all failures into one catch.
 - **Fix:** Edit structure first (matching braces, empty blocks), then fill in statements; let Prettier re-indent to reveal mismatches. Pattern: fetch → if (!ok) throw → parse → render, all flat inside try.
+
+- **Date:** 2026-08-08
+- **Doubt:** Wanted to handle "city not found" inside the if (!response.ok) block, and instead of a check renamed the catch-all log to "city not found" — didn't see which code path a not-found city takes.
+- **Concept:** APIs choose their own "not found" convention: GitHub sends 404 (.ok false), Open-Meteo geocoding sends 200 OK with no results key (.ok true — status check never fires; crash comes later at results[0]). Envelope check (.ok) ≠ content check (does the parsed data have what I need). Content can only be checked AFTER .json(). Catch stays generic; the thrown message carries the specific reason.
+- **Fix:** Order: fetch → if (!ok) throw → gotData = await .json() → if (!gotData.results) throw new Error("City not found") → use data. Inspect real API responses in the browser to learn each API's convention.
