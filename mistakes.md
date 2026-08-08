@@ -99,3 +99,13 @@ Format:
 - **Doubt:** Described the Response as "headings of the web page" — conflated HTTP response headers with page headings; fuzzy on what each await in fetch waits for.
 - **Concept:** First await = server replied (Response object: status + headers, body unread); second await = body fully read and parsed into a JS object. Headers are response metadata, unrelated to <h1> headings.
 - **Fix:** "Did they reply?" then "read the reply into an object" — two waits, two awaits.
+
+- **Date:** 2026-08-08
+- **Error:** Expected try/catch to catch a 400 Bad Request — it fired only by accident via a downstream TypeError (gotData.current was undefined). fetch doesn't reject on HTTP error statuses.
+- **Concept:** fetch rejects only when no reply arrives (network/DNS); a 400/404 is a successful fetch. Detect it via response.ok / response.status and throw manually to route into catch.
+- **Fix:** if (!response.ok) throw new Error(`status: ${response.status}`); before response.json().
+
+- **Date:** 2026-08-08
+- **Error:** Repeated brace scrambling while editing nested blocks: put catch inside the else block; later deleted the if but kept the throw (unconditional throw = success path unreachable) and lost the function's closing brace. Also once replaced throw with console.log + else, creating two separate error paths.
+- **Concept:** Block structure — catch pairs with try at the same level; throw exits immediately so no else is needed after it; every { needs its matching }. throw exists to funnel all failures into one catch.
+- **Fix:** Edit structure first (matching braces, empty blocks), then fill in statements; let Prettier re-indent to reveal mismatches. Pattern: fetch → if (!ok) throw → parse → render, all flat inside try.

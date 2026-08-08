@@ -1,0 +1,33 @@
+<!doctype html>
+
+<ul id="Temp"></ul>
+
+<script>
+  "use strict";
+
+  let list = document.querySelector("#Temp");
+  let showTemps = document.createElement("li");
+
+  async function loadWeather() {
+    try {
+      let LoadingFiles = await fetch(
+        "https://api.open-meteo.com/v1/forecast?latitude=28.61&longitude=77.20&current=temperature_2m",
+      );
+      if (!LoadingFiles.ok) {
+        throw new Error(`HTTP error! status: ${LoadingFiles.status}`);
+      }
+
+      let gotData = await LoadingFiles.json();
+      console.log(`${gotData.current.temperature_2m}`);
+      showTemps.textContent =
+        gotData.current.temperature_2m +
+        " " +
+        gotData.current_units.temperature_2m;
+      list.appendChild(showTemps);
+    } catch (err) {
+      console.log("Something went wrong", err);
+    }
+  }
+
+  loadWeather();
+</script>
