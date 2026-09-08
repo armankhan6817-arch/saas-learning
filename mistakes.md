@@ -114,3 +114,79 @@ Format:
 - **Doubt:** Wanted to handle "city not found" inside the if (!response.ok) block, and instead of a check renamed the catch-all log to "city not found" — didn't see which code path a not-found city takes.
 - **Concept:** APIs choose their own "not found" convention: GitHub sends 404 (.ok false), Open-Meteo geocoding sends 200 OK with no results key (.ok true — status check never fires; crash comes later at results[0]). Envelope check (.ok) ≠ content check (does the parsed data have what I need). Content can only be checked AFTER .json(). Catch stays generic; the thrown message carries the specific reason.
 - **Fix:** Order: fetch → if (!ok) throw → gotData = await .json() → if (!gotData.results) throw new Error("City not found") → use data. Inspect real API responses in the browser to learn each API's convention.
+
+- **Date:** 2026-08-10
+- **Doubt:** Couldn't read `const [todos, setTodos] = useState([]);` — the two sets of square brackets in one line.
+- **Concept:** `useState` returns a 2-item array `[currentValue, setterFunction]`; the left-hand brackets are array destructuring (unpack by position), the inner `[]` is the starting value. Names are arbitrary, position is what matters.
+- **Fix:** Long form is `const s = useState([]); const todos = s[0]; const setTodos = s[1];` — destructuring just collapses it. Convention: `thing` / `setThing`.
+
+- **Date:** 2026-08-10
+- **Error:** For a yes/no state wrote `const [menu, menuNow] = useState("closed")` — string instead of boolean, and slot-2 name didn't read as a function.
+- **Concept:** State type should match the question: booleans for yes/no, "" for text, 0 for numbers, [] for lists. A string yes/no can't toggle cleanly and breaks silently on typos. Slot 2 is always a function.
+- **Fix:** `const [menuOpen, setMenuOpen] = useState(false);` then toggle with `setMenuOpen(!menuOpen)`.
+
+- **Date:** 2026-08-10
+- **Doubt:** Why `const` for a state value that appears to change (`const [count, setCount] = useState(0)`).
+- **Concept:** A component is a function; each render is a fresh call with fresh locals. `count` is a frozen snapshot for that one render — React re-calls the function to show a new value, it never reassigns the variable. `const` also hard-blocks `count = count + 1`, which would silently do nothing (no re-render).
+- **Fix:** Never assign to state. Only the setter changes it: `setCount(count + 1)`.
+
+- **Date:** 2026-08-11
+- **Doubt:** Tried `{ if (shown) { <p>…</p> } }` inside JSX; didn't know `&&`.
+- **Concept:** `{ }` in JSX evaluates an *expression* (produces a value) — `if` is a *statement* (produces none), same rule that bans `if` in a braceless arrow body. `a && b` returns `a` when falsy, else `b`; React renders nothing for `false`/`null`/`undefined`. Trap: `0` is falsy but React *does* print `0`, so use `count > 0 && …`.
+- **Fix:** `{shown && <p>…</p>}` or `{shown ? <p>A</p> : <p>B</p>}`. To use a real `if`, compute above the return into a variable and render `{para}` — JSX is just a value.
+
+- **Date:** 2026-08-11
+- **Error:** Wrote `{{output && <p>…</p>}}` in JSX — double braces caused a syntax error.
+- **Concept:** Braces mean three different things by position: JSX escape, code block, object literal. Outer `{` escapes into JS; the second `{` is then read as an object literal, and `output && <p/>` isn't valid object syntax.
+- **Fix:** One pair only — `{output && <p>…</p>}`.
+
+- **Date:** 2026-08-11
+- **Doubt/trap:** In a handler that calls `setTone(chosenTone)`, reading `tone` on the next line gives the OLD tone (output lags one click behind).
+- **Concept:** State is a frozen snapshot per render; setters schedule the next render, they don't mutate the current variable.
+- **Fix:** Use the handler's own argument (`chosenTone`), not the state variable you just set.
+- **2026-08-15:** / **Doubt:** Expected state variable to update immediately after setting it, causing confusing console logs. / **Concept:** React State as a Snapshot / **Fix:** State updates are scheduled for the next render; they do not mutate the const variable in the current render's closure.
+- **Date:** 2026-08-15
+- **Error/Doubt:** Expected React state setter to update the variable immediately inside the same handler.
+- **Concept:** React state updates are scheduled; each render has a fixed state snapshot.
+- **Fix:** After setText(...), the current handler still sees the old text. The new text appears on the next render.
+
+- **Date:** 2026-08-15
+- **Error/Doubt:** Wondered whether tone state alone is enough for API response flow, without separate output state.
+- **Concept:** Separate state for user input/selection versus generated result; local variables do not persist/render UI.
+- **Fix:** Use chosenTone/tone to tell the API what style to use, and output state to store/display the API reply.
+
+
+- **Date:** 2026-08-19
+- **Error:** In the Next.js API route, read Claude's reply as `response.choices[0].message.content` — that is OpenAI's response shape, not Anthropic's. Would crash with "Cannot read properties of undefined (reading '0')".
+- **Concept:** Every API defines its own response shape; SDKs are not interchangeable. Anthropic returns `content` as an *array of content blocks*, each with a `.type` and (for text blocks) a `.text`.
+- **Fix:** `response.content[0].text`. When unsure of a response shape, `console.log` the whole object once and read it, don't guess from another API's docs.
+
+- **Date:** 2026-08-19
+- **Error/Doubt:** Prompt built as `Rewrite in ${tone} tone:\n\n${text} and return only the rewritten text...` — the instruction was glued onto the end of the user's text with no separator, so the model can read the instruction as part of the text to rewrite.
+- **Concept:** Prompt structure matters: instructions and user-supplied data must be visibly separated, or the model can't tell where one ends and the other begins (same class of problem as prompt injection).
+- **Fix:** Put all instructions before the data, and delimit the data (blank lines, quotes, or XML-ish tags like `<text>...</text>`).
+
+- **Date:** 2026-08-19
+- **Doubt:** Confused `JSON.stringify()` with `response.json()` — why "json" appears before the dot sometimes and after it other times.
+- **Concept:** Two different things share the name. `JSON` (capitals) is a built-in global toolbox object holding `.stringify()` and `.parse()`, which work on any string/object you pass as an argument. `.json()` (lowercase) is a method belonging to a Response/Request object that reads *its own* body and parses it — hence empty parentheses and `await`. General rule: whatever sits before the dot owns the function after it.
+- **Fix:** `JSON.stringify(obj)` → data goes in the parentheses. `await response.json()` → parentheses empty, the data is already inside `response`.
+
+- **Date:** 2026-08-19
+- **Doubt:** Why `await req.json()` instead of `JSON.parse(req)`.
+- **Concept:** `req` is a Request *object* (method, url, headers, body), not a string — `JSON.parse` needs a string, and would receive `"[object Request]"`. Also the body is a *stream* still arriving in chunks, so there is nothing complete to parse yet.
+- **Fix:** `await req.json()` = wait for all body chunks → assemble into a string → `JSON.parse` it. The manual equivalent is `const raw = await req.text(); const body = JSON.parse(raw);`. A body can only be read once.
+
+- **Date:** 2026-08-19
+- **Doubt:** "Why `JSON.stringify` in the return when `response.content[0].text` is already a string?"
+- **Concept:** stringify isn't being applied to the text — it's applied to `{ output: text }`, which is an *object* wrapping the string. Braces = object, even when every value inside is a string.
+- **Fix:** Read `JSON.stringify(X)` by asking what X is, not what's nested inside it. Wrapping the reply in an object (rather than sending the bare string) leaves room to add fields later — error, tone, usage — without breaking the client.
+
+- **Date:** 2026-09-08
+- **Error:** Wrote `${Loading === "true" ? ... }` to test a boolean state variable against the *string* `"true"`. `false === "true"` and `true === "true"` are both false, so the condition never fires.
+- **Concept:** `===` compares type as well as value. A boolean is never equal to a string that looks like it. Booleans don't need a comparison at all.
+- **Fix:** Use the boolean directly: `disabled={loading}`, `${loading ? "..." : "..."}`. Only compare with `===` when the value really is a string (like `tone === "casual"`).
+
+- **Date:** 2026-09-08
+- **Error:** Tried to disable a button by putting the word `disabled` inside `className`. CSS classes can't disable anything — the button stayed clickable.
+- **Concept:** `disabled` is an HTML *attribute* on the element (like `onClick`), not a class. In JSX it takes a boolean in braces. Tailwind's `disabled:` **variant** is a separate thing — it only styles an element that is *already* disabled by the attribute.
+- **Fix:** `<button disabled={loading} className="... disabled:opacity-50 disabled:cursor-not-allowed">`. Attribute controls behaviour; variant controls appearance.
