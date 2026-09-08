@@ -190,3 +190,38 @@ Format:
 - **Error:** Tried to disable a button by putting the word `disabled` inside `className`. CSS classes can't disable anything — the button stayed clickable.
 - **Concept:** `disabled` is an HTML *attribute* on the element (like `onClick`), not a class. In JSX it takes a boolean in braces. Tailwind's `disabled:` **variant** is a separate thing — it only styles an element that is *already* disabled by the attribute.
 - **Fix:** `<button disabled={loading} className="... disabled:opacity-50 disabled:cursor-not-allowed">`. Attribute controls behaviour; variant controls appearance.
+
+- **Date:** 2026-09-08
+- **Error:** Wrote `setLoading(false)` three times — at the end of `try`, inside `catch`, AND in `finally`.
+- **Concept:** `finally` runs on every exit path (success, throw, early return). That is its entire purpose — any cleanup placed there does not need repeating in the other branches.
+- **Fix:** Cleanup lives in `finally` only. `try` holds the happy path, `catch` holds the error message, `finally` holds what must happen either way.
+
+- **Date:** 2026-09-08
+- **Error:** REPEAT of a Week 3 mistake — no `if (!res.ok) throw new Error(...)` after `fetch`. A 500 from the server is treated as success.
+- **Concept:** `fetch` only rejects on *network* failure (no connection, DNS fail, server unreachable). A server that answers "500 Internal Server Error" completed a successful HTTP exchange, so the promise resolves and `catch` never fires.
+- **Fix:** Always check `res.ok` immediately after `fetch` and throw yourself if it is false. Same pattern used in the Week 3 weather app (`if (!LoadingFiles.ok) throw new Error(...)`).
+
+- **Date:** 2026-09-08
+- **Error:** Wrote `catch (error || response.ok === false)` — tried to put a condition in the catch parentheses.
+- **Concept:** The parentheses after `catch` hold a *binding* — a name you invent for the thrown value, exactly like a function parameter. Not a test. JavaScript cannot catch conditionally; `catch` catches everything thrown in its `try`.
+- **Fix:** To make a bad status reach `catch`, throw it yourself inside `try`: `if (!res.ok) throw new Error(...)`. Then the ordinary `catch (error)` picks it up.
+
+- **Date:** 2026-09-08
+- **Error:** Called `response.ok` when the variable was named `res`. The resulting `ReferenceError` was swallowed by `catch`, so the app showed a friendly "an error occurred" message on *every* request instead of crashing — a real bug disguised as handled failure.
+- **Concept:** A catch-all converts a hard crash into a soft lie. Without logging, a broken app looks like a working one that keeps failing.
+- **Fix:** Always `console.error(error)` inside `catch`. The user gets the friendly sentence; you get the real diagnostic.
+
+- **Date:** 2026-09-08
+- **Error:** Put `if (!res.ok) throw` *after* `await res.json()`.
+- **Concept:** A failing server often returns an HTML error page, not JSON — so `res.json()` throws a confusing parse error first and the deliberate status check never runs.
+- **Fix:** Check the status before touching the body: fetch → `if (!res.ok) throw` → `await res.json()`. Include `res.status` in the thrown message so 404 (wrong URL) is distinguishable from 500 (server broke).
+
+- **Date:** 2026-09-08
+- **Error:** Wrapped the whole `export async function POST(req) { ... }` *declaration* inside a `try` block at module level, producing two syntax errors (`export` inside a block; `return` outside a function).
+- **Concept:** `try` only guards code that executes inside it, at the moment it executes. Declaring a function and calling it are separate events — the declaration runs once at file load, the body runs on every later request. Also: `export` must sit at a module's top level.
+- **Fix:** `try` goes *inside* the function body, wrapping the per-request work. The `export async function` line stays at the top level.
+
+- **Date:** 2026-09-08
+- **Error:** Repeatedly returned error responses with no `status` — `new Response(body, { headers })` defaults to **200**, so a failure is reported as a success.
+- **Concept:** The HTTP status is the only channel the client's `res.ok` check reads. A 200 with an error message in the body means `!res.ok` never fires and the client renders the error text as if it were real output. 4xx = the caller sent something wrong; 5xx = the server broke.
+- **Fix:** `status` lives in the same options object as `headers`: `new Response(body, { status: 400, headers: {...} })`. Every non-success return needs one.
