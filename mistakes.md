@@ -225,3 +225,13 @@ Format:
 - **Error:** Repeatedly returned error responses with no `status` — `new Response(body, { headers })` defaults to **200**, so a failure is reported as a success.
 - **Concept:** The HTTP status is the only channel the client's `res.ok` check reads. A 200 with an error message in the body means `!res.ok` never fires and the client renders the error text as if it were real output. 4xx = the caller sent something wrong; 5xx = the server broke.
 - **Fix:** `status` lives in the same options object as `headers`: `new Response(body, { status: 400, headers: {...} })`. Every non-success return needs one.
+
+- **Date:** 2026-09-19
+- **Error:** Believed `SELECT * ... WHERE content ILIKE '%week%' ORDER BY created_at DESC` returned "the 3 newest notes", but it has no `LIMIT`. It only showed 3 rows because only 3 rows matched. It also used `*` when only `content` was asked for.
+- **Concept:** `ORDER BY` sorts the rows and `LIMIT` caps how many come back. Neither one does the other's job. A result that looks right on a small test table can still be wrong once more data arrives.
+- **Fix:** `SELECT content FROM notes ORDER BY created_at DESC LIMIT 3;`. Test a query by adding rows that should *not* appear in the result.
+
+- **Date:** 2026-09-19
+- **Doubt:** A `DELETE` run as the `anon` role said "Success", but no rows were deleted.
+- **Concept:** RLS doesn't raise an error when it blocks something. It hides the rows the role isn't allowed to touch. With no DELETE policy, `anon` can't see any rows to delete, so the query is valid, runs, and changes 0 rows. "Success" means the query ran without an error. It doesn't mean any rows changed.
+- **Fix:** Look at the row count, not the "Success" message. In the app this shows up as `data: []` with `error: null`. When a query returns nothing, check the RLS policies before debugging the code.
