@@ -2,7 +2,7 @@
 
 > Mirror of `AGENTS.md` in the repo root (which Codex and Antigravity read). **Change one, change both.**
 
-Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 6** — Supabase + saving data: databases, SQL basics, rows/columns/tables; building a "quick notes" app (no login yet). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.claude/CLAUDE.md` and apply fully here.
+Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 7** — Authentication + Row Level Security: email magic-link login, sessions, `user_id` on every row; each user sees only their own notes. Built in the separate `quick-notes` repo (Week 6 shipped 2026-09-20, live at quick-notes-mu-three.vercel.app). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.claude/CLAUDE.md` and apply fully here.
 
 ## Learning & practice sessions
 
