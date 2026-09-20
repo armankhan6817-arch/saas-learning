@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three Ways to Reach Supabase</title>
+<style>
+  :root {
+    --bg: #fafaf9; --fg: #1c1917; --muted: #57534e; --card: #ffffff;
+    --border: #e7e5e4; --code-bg: #f5f5f4; --accent: #0f766e;
+    --pro: #15803d; --con: #b91c1c; --warn-bg: #fef3c7; --warn-fg: #78350f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1917; --fg: #f5f5f4; --muted: #a8a29e; --card: #292524;
+      --border: #44403c; --code-bg: #0c0a09; --accent: #2dd4bf;
+      --pro: #4ade80; --con: #f87171; --warn-bg: #422006; --warn-fg: #fde68a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding-inline: 16px;
+  }
+  main { max-width: 860px; margin: 0 auto; padding-block: 40px 80px; }
+  h1 { font-size: 2rem; margin: 0 0 4px; }
+  h2 { margin-top: 56px; padding-top: 16px; border-top: 2px solid var(--border); }
+  h3 { margin-top: 28px; }
+  .sub { color: var(--muted); margin-top: 0; }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; overflow-x: auto; font-size: 0.88rem; line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; }
+  .flow {
+    background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 12px 16px; overflow-x: auto;
+  }
+  .flow pre { border: none; background: none; padding: 0; margin: 0; }
+  .note {
+    background: var(--warn-bg); color: var(--warn-fg); border-radius: 8px;
+    padding: 12px 16px; margin: 20px 0;
+  }
+  .pc { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .pc { grid-template-columns: 1fr; } }
+  .pc > div { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 4px 16px; }
+  .pc h4 { margin: 12px 0 4px; }
+  .pro h4 { color: var(--pro); } .con h4 { color: var(--con); }
+  .pc ul { padding-left: 20px; }
+  ol.lines li { margin-bottom: 6px; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 0.93rem; }
+  th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); }
+  .verdict { background: var(--card); border: 2px solid var(--accent); border-radius: 8px; padding: 4px 20px; margin-top: 24px; }
+  nav a { color: var(--accent); margin-right: 16px; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Three Ways to Reach Supabase</h1>
+<p class="sub">Week 6 reference: loading and saving data from a Next.js page.</p>
+
+<div class="note">
+  <strong>The examples use a made-up <code>books</code> table</strong> (<code>id</code>, <code>title</code>, <code>created_at</code>), not your <code>notes</code> table.
+  That's on purpose: you still have to translate each example to <code>notes</code> / <code>content</code> yourself, which keeps the typing rule intact.
+  Read the examples, don't copy them.
+</div>
+
+<nav>
+  <a href="#a">A. Library in the page</a>
+  <a href="#b">B. API route</a>
+  <a href="#c">C. Raw fetch</a>
+  <a href="#compare">Comparison</a>
+</nav>
+
+<h2>What's the same in all three</h2>
+<p>However your code reaches Supabase, it ends up as the <strong>same HTTP request</strong> to the same address:</p>
+<pre><code>https://&lt;your-project&gt;.supabase.co/rest/v1/books</code></pre>
+<p>Supabase automatically creates this web API (called <em>PostgREST</em>) for every table you create. Every request goes through the same checks:</p>
+<ol>
+  <li>Does it carry a valid <strong>key</strong>? If not, it's rejected straight away.</li>
+  <li>Which <strong>role</strong> does the key stand for? The publishable key = <code>anon</code>.</li>
+  <li>What do the <strong>RLS policies</strong> allow that role to do? Rows it isn't allowed to touch are silently left out.</li>
+  <li>The query runs in Postgres, and the rows come back as <strong>JSON</strong>.</li>
+</ol>
+<p>So the three methods only differ in <strong>who builds that request</strong> and <strong>where it's sent from</strong>: the user's browser, or your server.</p>
+
+
+<!-- ============ A ============ -->
+<h2 id="a">A. The supabase-js library, called from the page</h2>
+
+<div class="flow"><pre>
+Browser: page.js
+   │  supabase.from("books").select(...)
+   ▼
+supabase-js builds the URL + adds the key header
+   │  HTTP GET  /rest/v1/books?select=...
+   ▼
+Supabase ── checks key → role anon → RLS ──► books table
+   │
+   ◄──────────── { data, error } ──────────────┘
+</pre></div>
+
+<h3>Files involved</h3>
+<ul>
+  <li><code>lib/supabase.js</code>: creates the client once (you've already written this).</li>
+  <li><code>app/page.js</code>: <code>"use client"</code>, and it calls the client directly.</li>
+</ul>
+
+<h3>Loading</h3>
+<pre><code>async function loadBooks() {
+  const { data, error } = await supabase
+    .from("books")
+    .select("id, title, created_at")
+    .order("created_at", { ascending: false });
+
+  console.log(data, error);
+}</code></pre>
+<ol class="lines">
+  <li><code>async function loadBooks()</code>: a function you can use <code>await</code> inside. You'd declare it and call it <strong>inside a <code>useEffect</code></strong>, so it runs once when the page opens.</li>
+  <li><code>supabase.from("books")</code>: which table. Like SQL's <code>FROM books</code>.</li>
+  <li><code>.select("id, title, created_at")</code>: which columns, like SQL's <code>SELECT</code>. Column names go in one string, separated by commas.</li>
+  <li><code>.order("created_at", { ascending: false })</code>: like <code>ORDER BY created_at DESC</code>.</li>
+  <li><code>await</code>: the chain only <em>describes</em> the query. <code>await</code> actually sends it and waits for the reply.</li>
+  <li><code>const { data, error } = ...</code>: destructuring. The library <strong>never throws</strong> for database errors; it always returns this object:
+    <ul>
+      <li>success → <code>data</code> = array of rows, <code>error</code> = <code>null</code></li>
+      <li>failure → <code>data</code> = <code>null</code>, <code>error</code> = object with a <code>.message</code></li>
+      <li>RLS blocked it → <code>data</code> = <code>[]</code>, <code>error</code> = <code>null</code> (the silent case from your mistakes log)</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>Saving</h3>
+<pre><code>const { error } = await supabase
+  .from("books")
+  .insert({ title: newTitle });</code></pre>
+<ol class="lines">
+  <li><code>.insert({ title: newTitle })</code>: like SQL's <code>INSERT INTO books (title) VALUES (...)</code>. The object's keys must match column names exactly. You don't send <code>id</code> or <code>created_at</code>, because the database fills those in (identity column, <code>default now()</code>).</li>
+  <li>Only <code>error</code> is useful here. By default, insert doesn't send the new row back. After saving, either call <code>loadBooks()</code> again, or chain <code>.select()</code> after <code>.insert(...)</code> to get the saved row back.</li>
+</ol>
+
+<div class="pc">
+  <div class="pro"><h4>Pros</h4><ul>
+    <li><strong>Least code:</strong> one file, no URL strings, no headers.</li>
+    <li>The query chain reads like your SQL.</li>
+    <li>Handles errors consistently: always <code>{ data, error }</code>.</li>
+    <li><strong>Week 7 login is easiest here:</strong> the library stores the logged-in user's session and sends it with every request automatically, so RLS knows who's asking.</li>
+    <li>It's how the official Supabase docs do it, so answers you find online match your code.</li>
+  </ul></div>
+  <div class="con"><h4>Cons</h4><ul>
+    <li>The key and project URL are visible in the browser. That's fine by design, but <strong>all</strong> your security then depends on RLS. One wrong policy means a data leak.</li>
+    <li>Hides the HTTP underneath, so you learn less about how the web works.</li>
+    <li>Nowhere to put server-side rules like "max 500 characters" or "max 20 notes per minute". A user can call Supabase directly and skip your page's checks.</li>
+    <li>Adds a library to the JavaScript the browser has to download.</li>
+  </ul></div>
+</div>
+
+
+<!-- ============ B ============ -->
+<h2 id="b">B. An API route in between (the Week 5 pattern)</h2>
+
+<div class="flow"><pre>
+Browser: page.js
+   │  fetch("/api/books")
+   ▼
+Your server: app/api/books/route.js   (runs on Vercel, never in the browser)
+   │  supabase.from("books").select(...)
+   ▼
+Supabase ── checks key → role → RLS ──► books table
+   │
+   ◄── { data, error } ── route.js ── Response.json(...) ──► page.js
+</pre></div>
+
+<h3>Files involved</h3>
+<ul>
+  <li><code>lib/supabase.js</code>: the same client as in A.</li>
+  <li><code>app/api/books/route.js</code>: the server side. The folder path becomes the URL <code>/api/books</code>.</li>
+  <li><code>app/page.js</code>: only does <code>fetch("/api/books")</code>. It never touches Supabase.</li>
+</ul>
+
+<h3>Server side: <code>app/api/books/route.js</code></h3>
+<pre><code>import { supabase } from "@/lib/supabase";
+
+export async function GET() {
+  const { data, error } = await supabase
+    .from("books")
+    .select("id, title, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+  return Response.json(data);
+}</code></pre>
+<ol class="lines">
+  <li><code>export async function GET()</code>: Next.js calls this when a <strong>GET</strong> request hits <code>/api/books</code>. A plain <code>fetch(url)</code> is a GET. Tonewriter used <code>POST</code> because the page was <em>sending</em> text.</li>
+  <li>The query is exactly the same as in A. It just runs on the server now.</li>
+  <li><code>if (error)</code>: turns a database failure into a real HTTP error. <code>status: 500</code> means "the server broke", so the page's <code>res.ok</code> check will catch it. (Your 09-08 log entry: no status = defaults to 200 = the failure looks like success.)</li>
+  <li><code>Response.json(data)</code>: a shortcut for <code>new Response(JSON.stringify(data), { headers: {"Content-Type": "application/json"} })</code>.</li>
+</ol>
+
+<h3>Page side: <code>app/page.js</code></h3>
+<pre><code>async function loadBooks() {
+  const res = await fetch("/api/books");
+  if (!res.ok) throw new Error("Request failed: " + res.status);
+  const books = await res.json();
+  console.log(books);
+}</code></pre>
+<ol class="lines">
+  <li><code>fetch("/api/books")</code>: a relative URL, so it goes to <em>your own</em> site, not Supabase.</li>
+  <li><code>if (!res.ok)</code>: check the status <strong>before</strong> <code>.json()</code>. If the route doesn't exist, you get a 404 HTML page, and <code>.json()</code> would crash trying to parse it.</li>
+  <li><code>await res.json()</code>: turns the response body back into a JavaScript array.</li>
+  <li>This also goes inside a <code>useEffect</code>. Calling <code>fetch</code> directly in the component body runs it on <strong>every render</strong>.</li>
+</ol>
+<p>Saving works the same way: an <code>export async function POST(request)</code> in the route reads the body with <code>await request.json()</code> and calls <code>.insert(...)</code>. The page sends <code>fetch("/api/books", { method: "POST", headers, body: JSON.stringify(...) })</code>, the same shape as Tonewriter.</p>
+
+<div class="pc">
+  <div class="pro"><h4>Pros</h4><ul>
+    <li><strong>Can use secret keys:</strong> code in <code>route.js</code> never reaches the browser. That's why Tonewriter needed it for the Claude key.</li>
+    <li><strong>Rules users can't skip:</strong> validate length, block empty notes, rate-limit, reshape the data, and call other APIs (like Claude) in the same request.</li>
+    <li>The browser only ever sees <code>/api/books</code>. It never learns your Supabase URL or table names.</li>
+    <li>A pattern you already know from Week 5.</li>
+  </ul></div>
+  <div class="con"><h4>Cons</h4><ul>
+    <li><strong>Two files and twice the error handling:</strong> check <code>error</code> in the route and <code>res.ok</code> in the page.</li>
+    <li><strong>An extra hop:</strong> browser → your server → Supabase → your server → browser. Slower.</li>
+    <li>Each call runs a Vercel serverless function, which counts toward free-tier limits and can be slow the first time (a "cold start").</li>
+    <li><strong>Login gets harder (Week 7):</strong> the route has to find out who the user is, usually from cookies with the <code>@supabase/ssr</code> package. That's a lot more setup than in A.</li>
+    <li><strong>Trap:</strong> if you put the <em>secret/service_role</em> key in the route, RLS is <strong>ignored</strong>. Then you're responsible for all the security yourself.</li>
+  </ul></div>
+</div>
+
+
+<!-- ============ C ============ -->
+<h2 id="c">C. Raw <code>fetch</code> straight to Supabase's REST API</h2>
+
+<div class="flow"><pre>
+Browser: page.js
+   │  fetch("https://&lt;project&gt;.supabase.co/rest/v1/books?select=...",
+   │        { headers: { apikey: KEY } })
+   ▼
+Supabase ── checks key → role anon → RLS ──► books table
+   │
+   ◄────────── JSON array (or an error JSON) ─────┘
+</pre></div>
+<p>This is <strong>exactly what supabase-js does for you</strong> in method A, done by hand. No library, no route.</p>
+
+<h3>Files involved</h3>
+<ul>
+  <li><code>app/page.js</code> only. You don't even need <code>lib/supabase.js</code>, just the two values from <code>.env.local</code>.</li>
+</ul>
+
+<h3>Loading</h3>
+<pre><code>async function loadBooks() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    + "/rest/v1/books?select=id,title,created_at&amp;order=created_at.desc";
+
+  const res = await fetch(url, {
+    headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY },
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message);
+  }
+  const books = await res.json();
+  console.log(books);
+}</code></pre>
+<ol class="lines">
+  <li><strong>The URL is the query.</strong> After <code>?</code>, each <code>name=value</code> pair is one part of the SQL, joined with <code>&amp;</code>:
+    <ul>
+      <li><code>select=id,title,created_at</code> → <code>SELECT id, title, created_at</code> (commas, <strong>no spaces</strong>)</li>
+      <li><code>order=created_at.desc</code> → <code>ORDER BY created_at DESC</code></li>
+      <li>you could add <code>&amp;limit=3</code> → <code>LIMIT 3</code></li>
+    </ul>
+  </li>
+  <li><code>headers: { apikey: ... }</code>: the key travels in a <strong>header</strong>, not in the URL. Without it, Supabase answers with an error and a <code>401</code> status. (With an older <code>eyJ...</code> anon key, if you still get 401, also send <code>Authorization: "Bearer " + key</code>. The new <code>sb_publishable_</code> key works with <code>apikey</code> alone.)</li>
+  <li><code>if (!res.ok)</code>: you have to catch errors yourself. Supabase sends the error details as JSON with a <code>message</code> property.</li>
+  <li><code>await res.json()</code>: on success, the body is a <strong>plain array</strong> of rows, with no <code>{ data, error }</code> wrapper. That wrapper is something supabase-js adds.</li>
+  <li>This also goes inside a <code>useEffect</code>.</li>
+</ol>
+
+<h3>Saving</h3>
+<pre><code>const res = await fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + "/rest/v1/books", {
+  method: "POST",
+  headers: {
+    apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ title: newTitle }),
+});</code></pre>
+<ol class="lines">
+  <li><code>method: "POST"</code> on the table's address = <code>INSERT</code>.</li>
+  <li><code>"Content-Type": "application/json"</code>: tells Supabase the body is JSON, the same as in Tonewriter.</li>
+  <li><code>body: JSON.stringify(...)</code>: the new row, converted to text.</li>
+  <li>On success Supabase replies <code>201 Created</code> with an <strong>empty body</strong>, so don't call <code>.json()</code> on it. If you want the saved row back, add the header <code>Prefer: "return=representation"</code>.</li>
+</ol>
+
+<div class="pc">
+  <div class="pro"><h4>Pros</h4><ul>
+    <li><strong>Best for learning:</strong> you can see the real HTTP request (URL, method, headers, status codes). After this, supabase-js stops being magic.</li>
+    <li>No library to download, and no route file.</li>
+    <li>Uses only <code>fetch</code>, which you already know from Weeks 3 and 5.</li>
+  </ul></div>
+  <div class="con"><h4>Cons</h4><ul>
+    <li><strong>Building URLs by hand is fragile:</strong> one typo (a space after a comma, <code>order=created_at desc</code>) and you get an error or wrong results. Filter values with special characters need encoding.</li>
+    <li>Headers on every request, error handling on every request, and special cases to remember (empty 201 body, <code>Prefer</code> header).</li>
+    <li><strong>Login is painful (Week 7):</strong> you'd have to attach the user's token to every request and refresh it before it expires. The library does all of that for you.</li>
+    <li>It has the same security model as A: the key is in the browser, and RLS does all the protecting.</li>
+    <li>Almost nobody writes real apps this way, so you'll find few examples to learn from.</li>
+  </ul></div>
+</div>
+
+
+<!-- ============ COMPARE ============ -->
+<h2 id="compare">Comparison</h2>
+<div class="table-wrap">
+<table>
+  <tr><th></th><th>A. Library in page</th><th>B. API route</th><th>C. Raw fetch</th></tr>
+  <tr><td>Files you write</td><td>page.js (+ lib)</td><td>page.js + route.js (+ lib)</td><td>page.js</td></tr>
+  <tr><td>Who builds the HTTP request</td><td>supabase-js</td><td>supabase-js, on your server</td><td>You, by hand</td></tr>
+  <tr><td>Key visible in browser?</td><td>Yes (publishable, OK)</td><td>No</td><td>Yes (publishable, OK)</td></tr>
+  <tr><td>What protects the data</td><td>RLS only</td><td>RLS + your route's own checks</td><td>RLS only</td></tr>
+  <tr><td>Can use secret keys</td><td>No</td><td><strong>Yes</strong></td><td>No</td></tr>
+  <tr><td>Network hops</td><td>1</td><td>2</td><td>1</td></tr>
+  <tr><td>Error shape</td><td><code>{ data, error }</code></td><td>Whatever your route sends back</td><td>HTTP status + error JSON</td></tr>
+  <tr><td>Adding login (Week 7)</td><td><strong>Easy</strong></td><td>Medium–hard</td><td>Hard</td></tr>
+  <tr><td>What you learn</td><td>The Supabase way</td><td>Server/client split</td><td><strong>How HTTP really works</strong></td></tr>
+</table>
+</div>
+
+<div class="verdict">
+  <h3>Which to use when</h3>
+  <ul>
+    <li><strong>Quick Notes (this week): A.</strong> It's the least code, and it prepares you for Week 7.</li>
+    <li><strong>Do C once as a 15-minute exercise:</strong> load notes with raw fetch, look at the request in DevTools → Network, then switch to A. You'll understand what the library is doing.</li>
+    <li><strong>Use B when you need something the browser must not have:</strong> a secret key (Claude, payments), rules users can't skip, or several services called in one request. In Week 9's app (AI + auth + DB), the Claude call goes through a route, and the plain data reads can still use A.</li>
+  </ul>
+</div>
+
+</main>
+</body>
+</html>

@@ -235,3 +235,38 @@ Format:
 - **Doubt:** A `DELETE` run as the `anon` role said "Success", but no rows were deleted.
 - **Concept:** RLS doesn't raise an error when it blocks something. It hides the rows the role isn't allowed to touch. With no DELETE policy, `anon` can't see any rows to delete, so the query is valid, runs, and changes 0 rows. "Success" means the query ran without an error. It doesn't mean any rows changed.
 - **Fix:** Look at the row count, not the "Success" message. In the app this shows up as `data: []` with `error: null`. When a query returns nothing, check the RLS policies before debugging the code.
+
+- **Date:** 2026-09-19
+- **Doubt:** A `console.log` in `page.js` (no `"use client"`) showed up in both the terminal and the browser console. Does that mean it runs in both places?
+- **Concept:** Without `"use client"`, `page.js` is a Server Component and runs only on the server. The terminal output is the real one. In dev mode, Next.js also copies server logs into the browser console and labels them **"Server"**, just to make debugging easier.
+- **Fix:** Look at the terminal to see server output. A browser log with a "Server" label is a copy, not proof the code ran in the browser. Code only runs in the browser after you add `"use client"`.
+
+- **Date:** 2026-09-19
+- **Error:** In `lib/supabase.js`, called `createClient(...)` without storing or exporting what it returns, and read `process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY` when `.env.local` defines `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- **Concept:** A function call whose return value isn't stored is thrown away, so no other file can use it. Separately, `process.env.X` only finds a line in `.env.local` named exactly `X`. A name mismatch gives `undefined` with no error until something tries to use it.
+- **Fix:** `export const supabase = createClient(url, key)`. Copy env variable names straight from `.env.local` instead of typing them from memory.
+
+- **Date:** 2026-09-19
+- **Error:** Wrote `import supabase from "../lib/supabase"` (a default import) for a file that uses `export const supabase` (a named export).
+- **Concept:** A default export (`export default X`) is imported without braces, and there's only one per file. A named export (`export const X`) is imported with braces, and the name has to match. Using the wrong form gives `undefined`, and that only crashes later, when the code tries to use it.
+- **Fix:** Match the import to the export: `export const supabase` → `import { supabase } from "..."`.
+
+- **Date:** 2026-09-19
+- **Error:** Made the component itself `async` (`export default async function Home()`) and ran `await supabase...` directly in the body of a `"use client"` page.
+- **Concept:** A client component function has to return JSX straight away, every time it renders. It can't be `async`, because an `async` function returns a Promise, not JSX. And any code in the component body runs on every render, not just once.
+- **Fix:** Keep `Home` non-async. Put the data loading in a `useEffect(() => {...}, [])`: declare an `async function loadNotes()` inside it and call it there.
+
+- **Date:** 2026-09-19
+- **Doubt:** Why do we need `useEffect` to load data? Couldn't `useState` do it?
+- **Concept:** They do different jobs. `useState` is **memory**: it keeps a value between renders, and changing it triggers a re-render. `useEffect` is **timing**: it runs code *after* a render, and only when its dependencies change (`[]` = once). `useState` can't run code or wait for anything; `useState(loadNotes())` would just store a Promise.
+- **Fix:** Use them together: `useEffect` (once) → fetch → `setNotes(data)` → re-render → JSX shows `notes`.
+
+- **Date:** 2026-09-19
+- **Error:** Wrote `.select("*").order;`, which refers to the `order` method without calling it (no `()`, no arguments).
+- **Concept:** `obj.method` is the function itself. `obj.method()` is what runs it. Here `await` got a function instead of a query, so `data` and `error` both came out `undefined` and the request was never sent. There was no error message.
+- **Fix:** Call it with its arguments: `.order("created_at", { ascending: false })`. If a variable is unexpectedly `undefined`, check for a method that's missing its `()`.
+
+- **Date:** 2026-09-20
+- **Doubt:** If `useEffect` only runs once, why bother? Couldn't the loading code just sit in the component body?
+- **Concept:** The component body doesn't run once. It runs on **every** render, and every `useState` setter causes a render. With a textarea in the page, each keystroke would re-run the body and reload the database. `useEffect(..., [])` is the only thing that makes "once" possible. It also runs *after* the paint and never on the server.
+- **Fix:** Anything that talks to the outside world (fetching, timers, subscriptions) goes in a `useEffect`, not the body. The dependency array decides how often: `[]` = once, `[x]` = whenever `x` changes.
