@@ -1,6 +1,6 @@
 # saas-learning — Project Rules
 
-Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 7** — Authentication + Row Level Security: email magic-link login, sessions, `user_id` on every row; each user sees only their own notes. Built in the separate `quick-notes` repo (Week 6 shipped 2026-09-20, live at quick-notes-mu-three.vercel.app). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.codex/AGENTS.md` and apply fully here.
+Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 8** — first "real" app: a habit tracker (login → see habits → mark today done → see streak), ending with his first public post. Built in its own repo, not here (Week 7 shipped 2026-09-28: `quick-notes` gained email/password login + RLS, each user sees only their own notes, live at quick-notes-mu-three.vercel.app). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.codex/AGENTS.md` and apply fully here.
 
 > This file is the Codex/AGENTS-compatible mirror of `.claude/CLAUDE.md`. When one changes, change the other.
 
