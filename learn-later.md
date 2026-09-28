@@ -28,3 +28,15 @@ Format per entry:
 - **Why deferred:** Two reasons. (1) Learning value is low right now — it's fetch + render + tag filter, which is Week 3 material; the genuinely hard parts (adult API auth, rate limits, dead links) teach one vendor's API, nothing transferable. (2) Sending kink tags through the Claude API is a gray area under Anthropic's usage policies, and the account at risk is the one the whole roadmap runs on — so keep the LLM out of it entirely.
 - **Revisit when:** After Week 8, as a weekend project — by then auth + Supabase + RLS are in hand, so it's two evenings instead of two weeks. The mutual-match variant is the one worth building; it's a real product shape (Kindu, Spicer) and RLS makes the privacy guarantee real.
 - **Cannot become a roadmap product:** payment processors (Razorpay, Paddle, Polar, Stripe) prohibit or heavily restrict adult content, Vercel's AUP restricts it on free tiers, and it can't go in the public build-in-public portfolio.
+
+### Server-side auth in Next.js (`@supabase/ssr`, middleware, cookie sessions)
+- **Topic:** Keeping the Supabase session in cookies instead of browser localStorage, so Server Components, Route Handlers and `middleware.js` can also see who is logged in. The `@supabase/ssr` package plus a `createServerClient` / `createBrowserClient` split, and a middleware that refreshes the token on every request.
+- **Came up:** 2026-09-20, Week 7 kickoff (auth + RLS depth calibration).
+- **Why deferred:** Week 7's deliverable is a client-side app — `"use client"` at the top of `page.js`, every query fired from the browser. A browser-only session is enough for that, and RLS (not the server) is what actually enforces privacy. Adding SSR auth now means two clients, a middleware, and cookie plumbing before the basic flow is even understood.
+- **Revisit when:** a page must render already-personalised HTML on the server, or a route needs to block unauthenticated requests before any JS runs — realistically Week 9+ when an API route calls the Claude API on a logged-in user's behalf.
+
+### Other auth methods: OAuth providers, password login, MFA
+- **Topic:** `signInWithOAuth` (Google/GitHub), `signInWithPassword`, phone OTP, multi-factor auth.
+- **Came up:** 2026-09-20, Week 7 kickoff.
+- **Why deferred:** every one of these produces the exact same thing — a session with a `user.id` — and RLS doesn't care which one made it. Learning one login method properly beats learning four shallowly. Magic link is the one with no password reset flow to build.
+- **Revisit when:** a real product has users who bounce off email links (Week 14+ paid product). Adding Google login later is a ~20-line change, not a rebuild.

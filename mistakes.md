@@ -270,3 +270,13 @@ Format:
 - **Doubt:** If `useEffect` only runs once, why bother? Couldn't the loading code just sit in the component body?
 - **Concept:** The component body doesn't run once. It runs on **every** render, and every `useState` setter causes a render. With a textarea in the page, each keystroke would re-run the body and reload the database. `useEffect(..., [])` is the only thing that makes "once" possible. It also runs *after* the paint and never on the server.
 - **Fix:** Anything that talks to the outside world (fetching, timers, subscriptions) goes in a `useEffect`, not the body. The dependency array decides how often: `[]` = once, `[x]` = whenever `x` changes.
+
+- **Date:** 2026-09-28
+- **Error/Doubt:** Writing an RLS policy expression as `auth.user(id)=user(uuid)`.
+- **Concept:** Two lookalikes doing different jobs. `auth.users(id)` is *schema.table(column)* — foreign-key syntax, naming the column being pointed at. `auth.uid()` is a *function call* with empty parentheses, returning the current requester's uuid from their JWT. Separately, a column inside an expression is written as its bare name (`user_id`) — the type (`uuid`) is schema information, never restated in a query.
+- **Fix:** Policy expression is `user_id = auth.uid()`. Table(column) only appears in the FK definition; everywhere else you want the function.
+
+- **Date:** 2026-09-28
+- **Error/Doubt:** New JSX added to `page.js` didn't appear on screen at all, even though the element was unconditional.
+- **Concept:** Local edits only exist on the dev server. The Vercel URL keeps serving the last *pushed commit*, so it shows old code no matter how many times you save or reload.
+- **Fix:** When a change doesn't show up, check the address bar before debugging the code — `localhost:3000` with `npm run dev` running is the only place local edits appear. Deployed site updates on `git push`.
