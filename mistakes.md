@@ -280,3 +280,18 @@ Format:
 - **Error/Doubt:** New JSX added to `page.js` didn't appear on screen at all, even though the element was unconditional.
 - **Concept:** Local edits only exist on the dev server. The Vercel URL keeps serving the last *pushed commit*, so it shows old code no matter how many times you save or reload.
 - **Fix:** When a change doesn't show up, check the address bar before debugging the code — `localhost:3000` with `npm run dev` running is the only place local edits appear. Deployed site updates on `git push`.
+
+- **Date:** 2026-10-03
+- **Error/Doubt:** If `.env.local` never goes to GitHub (so never reaches Vercel), how does the deployed browser code get the Supabase URL and key?
+- **Concept:** Env vars are set separately in each place the app runs: `.env.local` for `npm run dev`, Vercel dashboard → Settings → Environment Variables for the deployed site. At **build time** Next.js replaces every `process.env.NEXT_PUBLIC_*` with the literal value inside the JS bundle — the browser never "fetches" them, they're baked into the code it downloads.
+- **Fix:** Paste the same `NEXT_PUBLIC_*` values into Vercel before deploying; after changing them, redeploy (they're baked in at build). Only ever put public-safe values behind `NEXT_PUBLIC_`.
+
+- **Date:** 2026-10-03
+- **Error/Doubt:** How does `user_id` in my table end up equal to the user's `id` in `auth.users`? Nothing seems to link them.
+- **Concept:** Nothing syncs them automatically. The uuid is **copied in at insert time** — either the app sends the logged-in user's id, or the column default `auth.uid()` fills it from the request's login token. A **foreign key** (`references auth.users(id)`) makes the database reject any uuid that isn't a real user.
+- **Fix:** `user_id uuid default auth.uid() references auth.users(id)`. RLS then compares `user_id = auth.uid()` on every read/write.
+
+- **Date:** 2026-10-03
+- **Error/Doubt:** What is the `id` column for, and why is it `int8`?
+- **Concept:** `id` is the **primary key** — the one value guaranteed unique per row, so you can point at exactly one row (other columns like `name` can repeat across users). Other tables point at it (e.g. `completions.habit_id`). `int8` = 64-bit integer (bigint) that auto-counts 1, 2, 3…, big enough to never run out.
+- **Fix:** Every table gets an `id` primary key; to reference a row from another table, store its `id`.
