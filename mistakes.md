@@ -295,3 +295,28 @@ Format:
 - **Error/Doubt:** What is the `id` column for, and why is it `int8`?
 - **Concept:** `id` is the **primary key** — the one value guaranteed unique per row, so you can point at exactly one row (other columns like `name` can repeat across users). Other tables point at it (e.g. `completions.habit_id`). `int8` = 64-bit integer (bigint) that auto-counts 1, 2, 3…, big enough to never run out.
 - **Fix:** Every table gets an `id` primary key; to reference a row from another table, store its `id`.
+
+- **Date:** 2026-10-04
+- **Error/Doubt:** Why does the database even let the user insert into `user_id`? And why the FK if `default auth.uid()` always fills it correctly?
+- **Concept:** There is no trusted "app" between the browser and Supabase — the app's requests and an attacker's requests use the same public anon key and the same permissions. Anything the frontend can send, a user with DevTools can send. A column default only applies when no value is sent, so it guards nothing.
+- **Fix:** Protection lives in the database: FK = `user_id` is a real user; RLS `with check (user_id = auth.uid())` = it's *you*. With that check, sending your own `user_id` is harmless and sending anyone else's is rejected.
+
+- **Date:** 2026-10-04
+- **Error/Doubt:** Designed `completions` with a `check bool` column and no date column.
+- **Concept:** In an event table the **row's existence is the fact** — a row means "done", no row means "not done", so a true/false column is redundant (and invites `false` rows that mean nothing). The thing that varies per row, and that a streak counts, is the **date**.
+- **Fix:** `completions`: `habit_id int8 → habits.id`, `user_id uuid default auth.uid() → auth.users.id`, `done_on date`. Ticking = insert a row; unticking = delete it.
+
+- **Date:** 2026-10-04
+- **Error/Doubt:** Reused quick-notes' page.js for the habit tracker, keeping a `done` field (`insert({name, done:false})`, `update({done: !habit.done})`) that the new `habits` table doesn't have.
+- **Concept:** Code must match the schema it talks to. The schema was designed with "done" living in `completions` (one row per habit per day), so a `done` flag on `habits` is both a missing column (insert/update error) and the `done_today` design already rejected.
+- **Fix:** Before reusing old code, diff it against the new tables. Here "mark today done" = `insert` a row into `completions` (`habit_id`, `done_on`), not `update` on `habits`.
+
+- **Date:** 2026-10-04 — **REPEAT** of 2026-09-28
+- **Error/Doubt:** Proposed the RLS USING expression `habits.user_id=auth.user(id)`.
+- **Concept:** Same mix-up as Week 7: `auth.users(id)` is table(column) syntax used only in a foreign key; `auth.uid()` is the function returning the requester's uuid. (`habits.` prefix is legal but unnecessary — the policy already belongs to `habits`.)
+- **Fix:** `user_id = auth.uid()`. Memory hook: **uid = "user id" squashed into one word, with empty ()** — a function call, nothing inside.
+
+- **Date:** 2026-10-04
+- **Error/Doubt:** Wanted `done_on` to default to today in the database (`current_date`) instead of sending it; app currently sends `new Date()`.
+- **Concept:** "Today" depends on **where** you ask. Supabase's server runs on UTC, and `new Date()` is serialised to a UTC ISO string (`...Z`) when sent. India is UTC+5:30, so between 00:00 and 05:30 IST both give **yesterday's** date. Only the browser knows the user's time zone.
+- **Fix:** Build the local date in the browser from `getFullYear()`, `getMonth() + 1`, `getDate()` → `"YYYY-MM-DD"`, and send that string as `done_on`.

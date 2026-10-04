@@ -40,3 +40,9 @@ Format per entry:
 - **Came up:** 2026-09-20, Week 7 kickoff.
 - **Why deferred:** every one of these produces the exact same thing — a session with a `user.id` — and RLS doesn't care which one made it. Learning one login method properly beats learning four shallowly. Magic link is the one with no password reset flow to build.
 - **Revisit when:** a real product has users who bounce off email links (Week 14+ paid product). Adding Google login later is a ~20-line change, not a rebuild.
+
+### Postgres column-level privileges (`grant insert (name) on habits to authenticated`)
+- **Topic:** Restricting which *columns* a role may insert/update, so the browser literally cannot send a `user_id` value — the column default is the only way it gets filled.
+- **Came up:** 2026-10-04, Week 8 habits schema — "why do we even allow the user to insert into `user_id`?"
+- **Why deferred:** An RLS `with check (user_id = auth.uid())` policy already makes sending `user_id` harmless (you can only send your own uuid, same result as the default). Column grants are a second permission system on top of RLS; learning both at once blurs which one is doing the protecting.
+- **Revisit when:** a table has a column users must never set even to their own value (e.g. `is_admin`, `plan`, `credits_remaining`) — realistically when payments/free-tier limits arrive in Weeks 10–17.
