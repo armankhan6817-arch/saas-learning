@@ -345,3 +345,8 @@ Format:
 - **Error/Doubt:** Wrote `isDoneToday` as `isDoneOn(getTodayDate())` — missing `habit` argument, passing a string where a Date was expected, and no `return`.
 - **Concept:** Arguments match parameters **by position**, and must be the **kind** the function uses (`isDoneOn` calls `formatDate(thisDay)` → `.getFullYear()`, which strings don't have). A function without `return` gives back `undefined`, even if the function it calls returns a value.
 - **Fix:** `return isDoneOn(habit, new Date());` — when calling a function, check count, order and type of each argument against its definition, and `return` the result if the caller needs it.
+
+- **Date:** 2026-10-06
+- **Error/Doubt:** Lost track of why `new Date()` appears in so many functions (`getTodayDate`, `isDoneToday`, `getStreak`); asked Claude to write `getStreak`. **Read-back owed next session.**
+- **Concept:** `new Date()` means "make a fresh box holding *right now*". Each function that needs today makes its own box. `getStreak` especially needs its own, because it **changes** the box (`setDate` steps it back one day per loop) — a shared box would get dragged into the past for everyone else.
+- **Fix:** Rule of thumb — call `new Date()` wherever you need "now"; never share a Date you're going to modify.
