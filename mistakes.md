@@ -320,3 +320,18 @@ Format:
 - **Error/Doubt:** Wanted `done_on` to default to today in the database (`current_date`) instead of sending it; app currently sends `new Date()`.
 - **Concept:** "Today" depends on **where** you ask. Supabase's server runs on UTC, and `new Date()` is serialised to a UTC ISO string (`...Z`) when sent. India is UTC+5:30, so between 00:00 and 05:30 IST both give **yesterday's** date. Only the browser knows the user's time zone.
 - **Fix:** Build the local date in the browser from `getFullYear()`, `getMonth() + 1`, `getDate()` → `"YYYY-MM-DD"`, and send that string as `done_on`.
+
+- **Date:** 2026-10-04
+- **Error/Doubt:** Declared a helper inside the component as `getTodayDate() { ... }` with no `function` keyword → syntax error.
+- **Concept:** `name() { }` is **method shorthand** — only valid inside an object literal `{ }` or a class body. Inside a function body (a React component is just a function), a named function needs a declaration keyword.
+- **Fix:** `function getTodayDate() { ... }` (or `const getTodayDate = () => { ... }`).
+
+- **Date:** 2026-10-04
+- **Error/Doubt:** Copied `loadHabits` to make `loadCompletions` but kept `setHabits(data)` and never created a completions state → habit list broke.
+- **Concept:** Each piece of fetched data needs its **own** state slot. Two async loads writing the same setter race: whichever response arrives last overwrites the other, so the list randomly shows habits or completion rows (which have no `name`).
+- **Fix:** `const [completions, setCompletions] = useState([])` and `setCompletions(data || [])` in `loadCompletions`. When copying a function, check every name in it, especially setters.
+
+- **Date:** 2026-10-04
+- **Error/Doubt:** Wrote `disabled={!session && isDoneToday(habit)}` to mean "disable if logged out OR already done".
+- **Concept:** `&&` is true only when **both** sides are true; `||` when **either** is. "Block if A or if B" is `A || B`. With `&&`, a logged-in user could still click a done habit and insert a duplicate.
+- **Fix:** `disabled={!session || isDoneToday(habit)}`. Read conditions aloud as English ("not logged in **or** done today") before typing the operator.
