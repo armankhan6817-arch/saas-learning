@@ -1,6 +1,6 @@
 # saas-learning — Project Rules
 
-Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 8** — first "real" app: a habit tracker (login → see habits → mark today done → see streak), ending with his first public post. Built in its own repo, not here (Week 7 shipped 2026-09-28: `quick-notes` gained email/password login + RLS, each user sees only their own notes, live at quick-notes-mu-three.vercel.app). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.codex/AGENTS.md` and apply fully here.
+Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 8.5** — 4-day consolidation block before Week 9; opens with Armaan reading back `getStreak()` in habit-tracker (Claude wrote it at his request), then React render mechanics and async error handling. (Week 8 shipped 2026-10-06: `habit-tracker` — login + session restore, habits, mark today done, streak — live at habit-tracker-dun-kappa.vercel.app, first public post done. Week 7 shipped 2026-09-28: `quick-notes` gained email/password login + RLS, each user sees only their own notes, live at quick-notes-mu-three.vercel.app). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.codex/AGENTS.md` and apply fully here.
 
 > This file is the Codex/AGENTS-compatible mirror of `.claude/CLAUDE.md`. When one changes, change the other.
 
