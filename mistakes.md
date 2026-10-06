@@ -335,3 +335,13 @@ Format:
 - **Error/Doubt:** Wrote `disabled={!session && isDoneToday(habit)}` to mean "disable if logged out OR already done".
 - **Concept:** `&&` is true only when **both** sides are true; `||` when **either** is. "Block if A or if B" is `A || B`. With `&&`, a logged-in user could still click a done habit and insert a duplicate.
 - **Fix:** `disabled={!session || isDoneToday(habit)}`. Read conditions aloud as English ("not logged in **or** done today") before typing the operator.
+
+- **Date:** 2026-10-06
+- **Error/Doubt:** Refactored `getTodayDate()` into `formatDate(date)` but lines inside still read `today.getMonth()` / `today.getDate()` → `ReferenceError: today is not defined`; skipped the suggested test that would have shown it.
+- **Concept:** A variable only exists in the scope that declares it. Removing `const today = new Date()` removed `today`; the parameter is now `date`. When renaming, every use must change too.
+- **Fix:** Use the parameter name throughout (`date.getMonth()`, `date.getDate()`). After a rename, Ctrl+F the old name; and run the check step before moving on.
+
+- **Date:** 2026-10-06
+- **Error/Doubt:** Wrote `isDoneToday` as `isDoneOn(getTodayDate())` — missing `habit` argument, passing a string where a Date was expected, and no `return`.
+- **Concept:** Arguments match parameters **by position**, and must be the **kind** the function uses (`isDoneOn` calls `formatDate(thisDay)` → `.getFullYear()`, which strings don't have). A function without `return` gives back `undefined`, even if the function it calls returns a value.
+- **Fix:** `return isDoneOn(habit, new Date());` — when calling a function, check count, order and type of each argument against its definition, and `return` the result if the caller needs it.
