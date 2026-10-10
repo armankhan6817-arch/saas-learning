@@ -347,6 +347,11 @@ Format:
 - **Fix:** `return isDoneOn(habit, new Date());` — when calling a function, check count, order and type of each argument against its definition, and `return` the result if the caller needs it.
 
 - **Date:** 2026-10-06
-- **Error/Doubt:** Lost track of why `new Date()` appears in so many functions (`getTodayDate`, `isDoneToday`, `getStreak`); asked Claude to write `getStreak`. **Read-back owed next session.**
+- **Error/Doubt:** Lost track of why `new Date()` appears in so many functions (`getTodayDate`, `isDoneToday`, `getStreak`); asked Claude to write `getStreak`. **Read-back done 2026-10-10** — explained every line, traced the shared-Date bug.
 - **Concept:** `new Date()` means "make a fresh box holding *right now*". Each function that needs today makes its own box. `getStreak` especially needs its own, because it **changes** the box (`setDate` steps it back one day per loop) — a shared box would get dragged into the past for everyone else.
 - **Fix:** Rule of thumb — call `new Date()` wherever you need "now"; never share a Date you're going to modify.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Read `if (!isDoneOn(habit, day))` in `getStreak` as "if done today, go back a day" — dropped the `!` (corrected himself right away; wording slip more than misunderstanding).
+- **Concept:** `!` flips a boolean: `!isDoneOn(...)` is true when the habit is **not** done. Small operators at the front of a condition change its whole meaning.
+- **Fix:** Read `!` aloud as "not": "if NOT done today, step back to yesterday". When reading a condition, say the operator before the function name.
