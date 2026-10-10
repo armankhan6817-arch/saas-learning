@@ -46,3 +46,16 @@ Format per entry:
 - **Came up:** 2026-10-04, Week 8 habits schema — "why do we even allow the user to insert into `user_id`?"
 - **Why deferred:** An RLS `with check (user_id = auth.uid())` policy already makes sending `user_id` harmless (you can only send your own uuid, same result as the default). Column grants are a second permission system on top of RLS; learning both at once blurs which one is doing the protecting.
 - **Revisit when:** a table has a column users must never set even to their own value (e.g. `is_admin`, `plan`, `credits_remaining`) — realistically when payments/free-tier limits arrive in Weeks 10–17.
+
+### Why pay for an AI utility when ChatGPT/Gemini/Claude are free?
+- **Topic:** What makes a narrow AI tool worth using or paying for over a free general chatbot: a specific workflow and input shape, saved per-user history/data, structured output, domain-tuned prompts, integrations, zero prompt-writing for the user.
+- **Came up:** 2026-10-10, start of Week 9: "why would people use these when they can use free ChatGPT?"
+- **Why deferred:** Week 9 is a skeleton-learning build (auth + DB + Claude via route.js) for one user: you. Differentiation is a product question, and answering it now turns build week into idea-hunting week.
+- **Revisit when:** Weeks 12–13 problem hunting. Every shortlisted idea must answer "why not just use ChatGPT?" in one sentence, or it gets cut.
+
+### Idea: social / public-accountability habit app ("one job, no feature bloat")
+- **Topic:** Habits made public so others see them, making them a responsibility. Commitment devices are a real mechanism; the "single-purpose vs feature-crowded" angle is a positioning bet.
+- **Came up:** 2026-10-10, start of Week 9, third idea in a row (generic utility → habit app → social habit app).
+- **Why deferred:** Social apps have a cold-start problem (worthless with zero users), the category is crowded, and there's no AI in it, so it doesn't teach Week 9's skill. Unvalidated: nobody's complaint is behind it yet.
+- **Revisit when:** Weeks 12–13 problem hunting. Look for real complaints about accountability/habit apps before building anything. Needs a one-sentence "why not just post on X / use an existing app?"
+- **Variant (same day, 4th idea):** a visual thing that grows with your streak, and shares from other people help it grow. Similar mechanics already exist (Finch's pet, Forest's tree). Evaluate alongside the social idea in Weeks 12–13, not before.
