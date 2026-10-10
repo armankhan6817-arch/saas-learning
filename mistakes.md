@@ -375,3 +375,33 @@ Format:
 - **Error/Doubt:** "If set re-runs the code, how does the variable stay the old one?"
 - **Concept:** Timing + separate runs. The setter only leaves a note; the current function keeps going (so lines after it see the old value), and only after it finishes does React run `Home()` again, creating a *new* variable rather than updating the old one. Same as calling any function twice: each call has its own variables.
 - **Fix:** Read code after a setter as "still in the old render". (Closure rep `run(1)/run(2)` offered, skipped by choice; revisit if snapshot bugs recur.)
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Returned the Supabase `error` object from `login()`, stored it in state and rendered `{result}` in a `<p>` → "Objects are not valid as a React child (found: [object Error])".
+- **Concept:** JSX `{}` can show strings, numbers (and arrays of elements), not plain objects. An Error is an object; its readable text lives in `.message`.
+- **Fix:** Store/render the string: `error.message`. Reading long errors: find the `Uncaught Error:` line and your own `page.js:NN` lines; skip `react-dom-client` internals.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Guessed `error.value` to get the error text; it doesn't exist, so the page showed nothing (no crash, no message).
+- **Concept:** Reading a property that doesn't exist gives `undefined` silently, with no error. Every JS Error keeps its text in `.message`.
+- **Fix:** Don't guess property names. Expand the object in the console (or check MDN) and use the name you actually see.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Thought the red Next.js overlay ("Console AuthApiError") meant the app was broken, after he'd already handled the error.
+- **Concept:** In dev, Next.js intercepts every `console.error` call and shows it as an overlay; the "Console" badge means it came from a console call, not a crash. The browser's `400 (Bad Request)` line is just the network log.
+- **Fix:** Use `console.log` for expected, handled cases (wrong password); reserve `console.error` for real surprises. Check the badge: "Console" = your log, "Runtime"/"Unhandled" = real crash.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Knew "without await you get a Promise" but not the step-by-step of why (`handleLogin` → `login()` → Supabase).
+- **Concept:** Calling an async function returns a pending Promise *immediately* (it pauses at its first `await`). `await` pauses the caller and unwraps the Promise into the returned value. Without `await` you hold the Promise itself, and putting it in JSX crashes (`found: [object Promise]`).
+- **Fix:** `const value = await login();`. `async` only permits `await`; `await` is what waits and unwraps.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Took "fetch doesn't throw on 500" to mean "500 counts as `res.ok`".
+- **Concept:** Two separate questions: did `fetch` throw? (only if no response arrived) and is `res.ok` true? (only for status 200–299). A 500 → fetch resolves, but `res.ok === false`.
+- **Fix:** `fetch` resolving ≠ success. Success = `res.ok`. Check it every time.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Thought a `throw` inside `try` continues to the next line (27) instead of jumping to `catch`.
+- **Concept:** `throw` ends the `try` block immediately: every remaining line in `try` is skipped, execution jumps to `catch`, then `finally` runs regardless.
+- **Fix:** Trace: throw → skip rest of try → catch → finally. In Tonewriter on a 500: 19 → 24 → 25 → 30 → 31 → 32 → 34; lines 27, 29 never run.

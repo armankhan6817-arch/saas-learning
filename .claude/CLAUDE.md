@@ -2,7 +2,7 @@
 
 > Mirror of `AGENTS.md` in the repo root (which Codex and Antigravity read). **Change one, change both.**
 
-Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 8.5** — 4-day consolidation block before Week 9 (started 2026-10-10, ends 2026-10-13); `getStreak()` read-back done 2026-10-10, next up React render mechanics and async error handling. (Week 8 shipped 2026-10-06: `habit-tracker` — login + session restore, habits, mark today done, streak — live at habit-tracker-dun-kappa.vercel.app, first public post done. Week 7 shipped 2026-09-28: `quick-notes` gained email/password login + RLS, each user sees only their own notes, live at quick-notes-mu-three.vercel.app). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.claude/CLAUDE.md` and apply fully here.
+Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 8.5** — 4-day consolidation block before Week 9 (started 2026-10-10, ends 2026-10-13); `getStreak()` read-back, React render mechanics and async error handling done 2026-10-10; left: quick RLS check, then Next.js/Vercel/env vars. (Week 8 shipped 2026-10-06: `habit-tracker` — login + session restore, habits, mark today done, streak — live at habit-tracker-dun-kappa.vercel.app, first public post done. Week 7 shipped 2026-09-28: `quick-notes` gained email/password login + RLS, each user sees only their own notes, live at quick-notes-mu-three.vercel.app). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.claude/CLAUDE.md` and apply fully here.
 
 ## Learning & practice sessions
 
