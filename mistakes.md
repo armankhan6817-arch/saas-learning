@@ -355,3 +355,23 @@ Format:
 - **Error/Doubt:** Read `if (!isDoneOn(habit, day))` in `getStreak` as "if done today, go back a day" — dropped the `!` (corrected himself right away; wording slip more than misunderstanding).
 - **Concept:** `!` flips a boolean: `!isDoneOn(...)` is true when the habit is **not** done. Small operators at the front of a condition change its whole meaning.
 - **Fix:** Read `!` aloud as "not": "if NOT done today, step back to yesterday". When reading a condition, say the operator before the function name.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Lumped `day.setDate(...)` in with React setters ("whenever we run set... it runs the whole code again").
+- **Concept:** Only setters returned by `useState` (e.g. `setCompletions`) schedule a re-render. `setDate` is a plain Date method: it changes the Date object and React never knows.
+- **Fix:** Check where a `set...` comes from: `const [x, setX] = useState()` means it's a React setter; `obj.setSomething()` is just a method on that object.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Predicted `completions.length` would be 1 after ticking one habit, and was surprised by two `render` logs per update.
+- **Concept:** State holds the **whole** list copied from the table (all habits, all days), not just the latest change. In `npm run dev`, React Strict Mode calls the component twice per render to expose impure code; production renders once.
+- **Fix:** `length` = total rows in the browser's copy. Two identical render logs in dev = Strict Mode, not a bug; check the deployed site for the real count.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Predicted `completions.length` right after `setCompletions(data)` would be 0 "because the data hasn't arrived yet". It had arrived (`data.length` was 2); couldn't explain why state was still 0.
+- **Concept:** State snapshot: each render is one run of `Home()`, and `completions` is a `const` fixed for that run. A function created in that run sees that run's value. The setter doesn't change the current variable; it asks React to run `Home()` again with the new value.
+- **Fix:** Right after a setter, use the value you passed in (`data`), not the state variable. To see the new state, look in the *next* render (e.g. a log just above `return`).
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** "If set re-runs the code, how does the variable stay the old one?"
+- **Concept:** Timing + separate runs. The setter only leaves a note; the current function keeps going (so lines after it see the old value), and only after it finishes does React run `Home()` again, creating a *new* variable rather than updating the old one. Same as calling any function twice: each call has its own variables.
+- **Fix:** Read code after a setter as "still in the old render". (Closure rep `run(1)/run(2)` offered, skipped by choice; revisit if snapshot bugs recur.)
