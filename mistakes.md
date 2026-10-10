@@ -405,3 +405,8 @@ Format:
 - **Error/Doubt:** Thought a `throw` inside `try` continues to the next line (27) instead of jumping to `catch`.
 - **Concept:** `throw` ends the `try` block immediately: every remaining line in `try` is skipped, execution jumps to `catch`, then `finally` runs regardless.
 - **Fix:** Trace: throw → skip rest of try → catch → finally. In Tonewriter on a 500: 19 → 24 → 25 → 30 → 31 → 32 → 34; lines 27, 29 never run.
+
+- **Date:** 2026-10-10
+- **Error/Doubt:** Knew the live site fails because `.env.local` isn't pushed, but gave "use route.js" as the fix.
+- **Concept:** Two separate things: `route.js` decides *where the key is used* (server only, never the browser). Vercel's Environment Variables setting decides *where the key is stored* for the live site. `.env.local` only feeds localhost.
+- **Fix:** Vercel → Project → Settings → Environment Variables → add `ANTHROPIC_API_KEY` → **redeploy** (env changes only apply to new deployments).
