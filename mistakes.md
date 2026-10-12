@@ -415,3 +415,8 @@ Format:
 - **Error/Doubt:** Copied tone-rewriter's route.js into tiny-habits: it read `req.json()` twice and its validation still checked `text`/`tone`, which don't exist there. Fixed both after a hint.
 - **Concept:** A request body is a stream, so `req.json()` can only be read once. Copied code keeps the old file's variable names.
 - **Fix:** Read the body once with `const { goal } = await req.json()`. After copying code, read each line and check every variable name exists in the new file.
+
+- **Date:** 2026-10-12
+- **Error/Doubt:** On an AI-written page.js read-back, said `setHabits([])` before the fetch is "to show the empty state", and misread a chained ternary (picked the last branch instead of the middle one).
+- **Concept:** Clearing state before a request stops stale results from an earlier request showing next to a new error. In `a ? X : b ? Y : Z`, the conditions are checked left to right and the first true one wins.
+- **Fix:** Reset result state at the start of every request. To read a chained ternary, write down each condition with true/false, in order.
