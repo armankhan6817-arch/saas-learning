@@ -420,3 +420,13 @@ Format:
 - **Error/Doubt:** On an AI-written page.js read-back, said `setHabits([])` before the fetch is "to show the empty state", and misread a chained ternary (picked the last branch instead of the middle one).
 - **Concept:** Clearing state before a request stops stale results from an earlier request showing next to a new error. In `a ? X : b ? Y : Z`, the conditions are checked left to right and the first true one wins.
 - **Fix:** Reset result state at the start of every request. To read a chained ternary, write down each condition with true/false, in order.
+
+- **Date:** 2026-10-12
+- **Error/Doubt:** In tiny-habits restoreSession: called `useEffect` without importing it (crash), and wrote `const data = await supabase.auth.getSession()`, so `data.session` was always undefined.
+- **Concept:** Every hook must be imported from "react". Supabase calls return a wrapper `{ data, error }`, and the session is one level down, at `data.session`. This is the same family as Response vs body.
+- **Fix:** `import { useState, useEffect } from "react"` and `const { data, error } = await supabase.auth.getSession()`, then use `data.session`.
+
+- **Date:** 2026-10-12
+- **Error/Doubt:** Imported the Supabase client wrongly twice: first `createClient` from the npm package, then `"@lib/supabase-js"`, which mixed the package name with the local file path.
+- **Concept:** The npm package `@supabase/supabase-js` gives you `createClient`. Your own file `lib/supabase.js` gives you the ready-made `supabase` client. The `@/` alias (with a slash) points at the project root, and the `.js` extension is dropped.
+- **Fix:** In components, use `import { supabase } from "@/lib/supabase"`. Only lib/supabase.js imports from the package.
