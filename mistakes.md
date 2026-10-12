@@ -410,3 +410,8 @@ Format:
 - **Error/Doubt:** Knew the live site fails because `.env.local` isn't pushed, but gave "use route.js" as the fix.
 - **Concept:** Two separate things: `route.js` decides *where the key is used* (server only, never the browser). Vercel's Environment Variables setting decides *where the key is stored* for the live site. `.env.local` only feeds localhost.
 - **Fix:** Vercel → Project → Settings → Environment Variables → add `ANTHROPIC_API_KEY` → **redeploy** (env changes only apply to new deployments).
+
+- **Date:** 2026-10-12
+- **Error/Doubt:** Copied tone-rewriter's route.js into tiny-habits: it read `req.json()` twice and its validation still checked `text`/`tone`, which don't exist there. Fixed both after a hint.
+- **Concept:** A request body is a stream, so `req.json()` can only be read once. Copied code keeps the old file's variable names.
+- **Fix:** Read the body once with `const { goal } = await req.json()`. After copying code, read each line and check every variable name exists in the new file.
