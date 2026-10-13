@@ -440,3 +440,8 @@ Format:
 - **Error/Doubt:** AI-written Delete code was added to tiny-habits while the table only had SELECT + INSERT RLS policies. He then added a DELETE policy `using (user_id = auth.uid())`.
 - **Concept:** When no RLS policy allows an action, Supabase doesn't throw: it silently matches 0 rows and returns `error: null`. The UI says "deleted", then a re-fetch brings the row back. Every action (SELECT/INSERT/UPDATE/DELETE) needs its own policy.
 - **Fix:** For each new Supabase call, check that a policy exists for that action, with an owner condition (`user_id = auth.uid()`), never `true`.
+
+- **Date:** 2026-10-13
+- **Error/Doubt:** Knew `type="submit"` submits the form, but not that a `<button>` inside a `<form>` is `submit` by default.
+- **Concept:** With no `type`, a button in a form is a submit button. A second button (e.g. Sign up) would fire both its `onClick` and the form's `onSubmit` (handleLogin) at once.
+- **Fix:** Give every extra button in a form `type="button"`. Only the button that should trigger `onSubmit` gets `type="submit"`.
