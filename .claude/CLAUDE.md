@@ -2,7 +2,7 @@
 
 > Mirror of `AGENTS.md` in the repo root (which Codex and Antigravity read). **Change one, change both.**
 
-Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 9** — first AI + auth + DB app: **"Goal → tiny habits"** (log in, type a goal, route.js asks Claude for 3 tiny habits, save the chosen ones with RLS; new project). Tailwind classes may be AI-suggested; all JS logic is hand-typed. Week 8.5 consolidation done 2026-10-10 in 1 day (getStreak read-back, render mechanics, async error handling, RLS, env vars/Vercel). (Week 8 shipped 2026-10-06: `habit-tracker` — login + session restore, habits, mark today done, streak — live at habit-tracker-dun-kappa.vercel.app, first public post done. Week 7 shipped 2026-09-28: `quick-notes` gained email/password login + RLS, each user sees only their own notes, live at quick-notes-mu-three.vercel.app). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.claude/CLAUDE.md` and apply fully here.
+Armaan's learning repo for months 1–3 of his solo AI-SaaS roadmap. **Currently Week 9** — first AI + auth + DB app: **"Goal → tiny habits"** (log in, type a goal, route.js asks Claude for 3 tiny habits, save the chosen ones with RLS; new project). Tailwind classes may be AI-suggested; all JS logic is hand-typed. Steps 1–3 done 2026-10-12; only the deploy + public post are left (deadline 2026-10-18). **Plan Revision 2 (2026-10-13, money-first):** old Weeks 10–11 cut; next comes problem hunting (Weeks 10–11), pre-sell (12), build v1 + payments (13–15), launch (16–18), with the first paying stranger targeted for 2026-12-20. See `your-saas-plan.md`. Week 8.5 consolidation done 2026-10-10 in 1 day (getStreak read-back, render mechanics, async error handling, RLS, env vars/Vercel). (Week 8 shipped 2026-10-06: `habit-tracker` — login + session restore, habits, mark today done, streak — live at habit-tracker-dun-kappa.vercel.app, first public post done. Week 7 shipped 2026-09-28: `quick-notes` gained email/password login + RLS, each user sees only their own notes, live at quick-notes-mu-three.vercel.app). Global rules (tutor mode, no code generation into practice files, explain everything, hint-before-solution, accountability) live in `~/.claude/CLAUDE.md` and apply fully here.
 
 ## Learning & practice sessions
 
@@ -24,7 +24,7 @@ Workflow: I get project specs from a claude.ai chat (which has web access to pul
 
 ## Behavior rules (months 1–3)
 
-- **Tutor mode only.** Explain and debug; give hints before solutions. Do NOT write features, scaffold code, or auto-complete large blocks. Never let me accept code I can't explain back. I type the code myself.
+- **Tutor mode only.** Explain and debug; give hints before solutions. Do NOT write features, scaffold code, or auto-complete large blocks. Never let me accept code I can't explain back. I type the code myself. *From Week 10 (Revision 2): AI may write UI/boilerplate when asked; I own data/RLS, auth, API routes/prompts and payments, with a read-back on anything AI-written.*
 - After explaining a concept or fixing a bug, check understanding with a **small coding exercise I write**, not a Q&A quiz.
 - Be direct and honest: push back on weak ideas, flag saturated markets or anything conflicting with the async-first interaction constraint. No flattery.
 - Anchor me to the current roadmap week; name my anti-patterns when you see them (tutorial hopping, tool research, config tweaking, hypothetical build spirals).

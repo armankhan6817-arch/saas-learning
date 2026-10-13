@@ -430,3 +430,8 @@ Format:
 - **Error/Doubt:** Imported the Supabase client wrongly twice: first `createClient` from the npm package, then `"@lib/supabase-js"`, which mixed the package name with the local file path.
 - **Concept:** The npm package `@supabase/supabase-js` gives you `createClient`. Your own file `lib/supabase.js` gives you the ready-made `supabase` client. The `@/` alias (with a slash) points at the project root, and the `.js` extension is dropped.
 - **Fix:** In components, use `import { supabase } from "@/lib/supabase"`. Only lib/supabase.js imports from the package.
+
+- **Date:** 2026-10-13
+- **Error/Doubt:** Thought typing in an input "refreshes the page" on each key press, and asked whether that re-runs restoreSession every time.
+- **Concept:** A key press calls a setter, which **re-renders** the component: the function body runs again and state is kept. A **reload** wipes state and remounts everything. `useEffect(fn, [])` runs only after the first render (twice in dev Strict Mode), never on later re-renders. Functions are re-*defined* each render but only *called* when something calls them.
+- **Fix:** Say "re-render", not "refresh". To check what runs when, put a `console.log` in the component body and one inside the effect.
