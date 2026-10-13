@@ -435,3 +435,8 @@ Format:
 - **Error/Doubt:** Thought typing in an input "refreshes the page" on each key press, and asked whether that re-runs restoreSession every time.
 - **Concept:** A key press calls a setter, which **re-renders** the component: the function body runs again and state is kept. A **reload** wipes state and remounts everything. `useEffect(fn, [])` runs only after the first render (twice in dev Strict Mode), never on later re-renders. Functions are re-*defined* each render but only *called* when something calls them.
 - **Fix:** Say "re-render", not "refresh". To check what runs when, put a `console.log` in the component body and one inside the effect.
+
+- **Date:** 2026-10-13
+- **Error/Doubt:** AI-written Delete code was added to tiny-habits while the table only had SELECT + INSERT RLS policies. He then added a DELETE policy `using (user_id = auth.uid())`.
+- **Concept:** When no RLS policy allows an action, Supabase doesn't throw: it silently matches 0 rows and returns `error: null`. The UI says "deleted", then a re-fetch brings the row back. Every action (SELECT/INSERT/UPDATE/DELETE) needs its own policy.
+- **Fix:** For each new Supabase call, check that a policy exists for that action, with an owner condition (`user_id = auth.uid()`), never `true`.
